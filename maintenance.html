@@ -39,6 +39,15 @@
   .recur-stat { text-align: right; }
   .recur-freq { font-family: var(--font-mono); font-size: 13px; color: var(--rose-deep); }
   .recur-count { font-size: 11px; color: var(--text-muted); }
+  .recur-goal-row { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+  .recur-goal-row input { width: 56px; padding: 4px 6px; border: 1px solid var(--border-strong); border-radius: 6px; font-size: 11px; }
+  .recur-goal-row span { font-size: 11px; color: var(--text-muted); }
+  .status-badge { font-size: 10px; font-family: var(--font-mono); text-transform: uppercase; padding: 3px 9px; border-radius: 20px; margin-top: 4px; display: inline-block; }
+  .status-overdue { background: #F7C1C1; color: #791F1F; }
+  .status-soon { background: #FAC775; color: #633806; }
+  .status-ontrack { background: #C0DD97; color: #27500A; }
+  .due-banner { background: #F7C1C1; border: 1px solid #E24B4A; border-radius: 12px; padding: 12px 16px; margin-bottom: 1.5rem; font-size: 13px; color: #791F1F; }
+  .due-banner strong { font-weight: 500; }
 
   :root {
     --bg-page: #FBF0F2;
@@ -154,6 +163,7 @@
     <button class="newbtn" id="new-btn">+ Log something</button>
   </div>
 
+  <div id="due-banner"></div>
   <div id="summary" class="summary-grid"></div>
 
   <div class="tabs">
@@ -229,6 +239,7 @@
   function labelFor(cat) { return CAT_LABELS[cat] || (cat.charAt(0).toUpperCase() + cat.slice(1)); }
 
   let entries = [];
+  let goals = {}; // key "place::category" -> target_days
   let activeFilter = null;
 
   function uid() { return crypto.randomUUID ? crypto.randomUUID() : 'i' + Date.now() + Math.floor(Math.random()*1000); }
@@ -269,6 +280,11 @@
     const { data, error } = await sb.from('maintenance_log').select('*').order('entry_date', { ascending: false });
     if (error) { console.error(error); return; }
     entries = (data || []).map(r => ({ id: r.id, category: r.category, place: r.place, provider: r.provider, date: Number(r.entry_date), notes: r.notes, source: r.source, address: r.address, lat: r.lat, lng: r.lng }));
+
+    const { data: goalRows } = await sb.from('recurring_goals').select('*');
+    goals = {};
+    (goalRows || []).forEach(g => { goals[g.place + '::' + g.category] = { id: g.id, target_days: g.target_days }; });
+
     render();
   }
 
@@ -281,7 +297,37 @@
     renderList();
     renderCalendar();
     renderRecurring();
+    renderDueBanner();
     if (mapReady) renderMap();
+  }
+
+  function dueStatus(lastDate, targetDays) {
+    const nextDue = lastDate + targetDays * 86400000;
+    const daysUntil = Math.round((nextDue - Date.now()) / 86400000);
+    if (daysUntil < 0) return { state: 'overdue', days: Math.abs(daysUntil) };
+    if (daysUntil <= 5) return { state: 'soon', days: daysUntil };
+    return { state: 'ontrack', days: daysUntil };
+  }
+
+  function renderDueBanner() {
+    const banner = document.getElementById('due-banner');
+    if (!banner) return;
+    const byKey = {};
+    entries.forEach(e => {
+      const key = (e.place || e.provider || 'Unknown') + '::' + e.category;
+      if (!byKey[key]) byKey[key] = [];
+      byKey[key].push(e);
+    });
+    const overdue = [];
+    Object.keys(byKey).forEach(key => {
+      const goal = goals[key];
+      if (!goal) return;
+      const list = byKey[key].sort((a,b) => b.date - a.date);
+      const status = dueStatus(list[0].date, goal.target_days);
+      if (status.state === 'overdue') overdue.push({ name: key.split('::')[0], days: status.days });
+    });
+    if (overdue.length === 0) { banner.innerHTML = ''; return; }
+    banner.innerHTML = `<div class="due-banner">${overdue.map(o => `<strong>${escapeHtml(o.name)}</strong> is ${o.days} day${o.days === 1 ? '' : 's'} overdue`).join(' &middot; ')}</div>`;
   }
 
   // ---- Tabs ----
@@ -429,19 +475,22 @@
       if (!byKey[key]) byKey[key] = [];
       byKey[key].push(e);
     });
+    // include goals that don't have log entries yet
+    Object.keys(goals).forEach(key => { if (!byKey[key]) byKey[key] = []; });
+
     const recurring = Object.keys(byKey)
       .map(key => {
-        const list = byKey[key].sort((a,b) => a.date - b.date);
+        const es = byKey[key].sort((a,b) => a.date - b.date);
         const [name, cat] = key.split('::');
         let avgGapDays = null;
-        if (list.length > 1) {
+        if (es.length > 1) {
           const gaps = [];
-          for (let i = 1; i < list.length; i++) gaps.push((list[i].date - list[i-1].date) / 86400000);
+          for (let i = 1; i < es.length; i++) gaps.push((es[i].date - es[i-1].date) / 86400000);
           avgGapDays = gaps.reduce((a,b) => a+b, 0) / gaps.length;
         }
-        return { name, cat, count: list.length, avgGapDays, last: list[list.length-1].date };
+        return { key, name, cat, count: es.length, avgGapDays, last: es.length ? es[es.length-1].date : null };
       })
-      .filter(r => r.count >= 2)
+      .filter(r => r.count >= 2 || goals[r.key])
       .sort((a,b) => b.count - a.count);
 
     if (recurring.length === 0) {
@@ -452,20 +501,54 @@
     recurring.forEach(r => {
       const card = document.createElement('div');
       card.className = 'recur-card';
-      const freqText = r.avgGapDays < 10 ? `every ${Math.round(r.avgGapDays)} days` : `every ${Math.round(r.avgGapDays / 7)} weeks`;
-      card.innerHTML = `
-        <div>
-          <div class="recur-name">${escapeHtml(r.name)}</div>
-          <div class="recur-cat">${labelFor(r.cat)}</div>
-        </div>
-        <div class="recur-stat">
-          <div class="recur-freq">${freqText}</div>
-          <div class="recur-count">${r.count} visits · last ${fmtDate(r.last)}</div>
+      const goal = goals[r.key];
+      let statusHtml = '';
+      if (goal && r.last) {
+        const status = dueStatus(r.last, goal.target_days);
+        const label = status.state === 'overdue' ? `Overdue by ${status.days}d` : status.state === 'soon' ? `Due in ${status.days}d` : `Due in ${status.days}d`;
+        statusHtml = `<span class="status-badge status-${status.state}">${label}</span>`;
+      } else if (goal && !r.last) {
+        statusHtml = `<span class="status-badge status-soon">Not logged yet</span>`;
+      }
+      const freqText = r.avgGapDays ? (r.avgGapDays < 10 ? `every ${Math.round(r.avgGapDays)} days observed` : `every ${Math.round(r.avgGapDays / 7)} weeks observed`) : 'not enough history yet';
+
+      const left = document.createElement('div');
+      left.innerHTML = `
+        <div class="recur-name">${escapeHtml(r.name)}</div>
+        <div class="recur-cat">${labelFor(r.cat)}</div>
+        <div class="recur-goal-row">
+          <span>Goal: every</span>
+          <input type="number" min="1" value="${goal ? goal.target_days : ''}" placeholder="30" id="goal-input-${cssKey(r.key)}" />
+          <span>days</span>
         </div>
       `;
+
+      const right = document.createElement('div');
+      right.className = 'recur-stat';
+      right.innerHTML = `
+        <div class="recur-freq">${freqText}</div>
+        <div class="recur-count">${r.count} visit${r.count === 1 ? '' : 's'}${r.last ? ' · last ' + fmtDate(r.last) : ''}</div>
+        ${statusHtml}
+      `;
+
+      card.appendChild(left);
+      card.appendChild(right);
       list.appendChild(card);
+
+      const input = left.querySelector('input');
+      input.addEventListener('change', async () => {
+        const val = parseInt(input.value, 10);
+        if (!val || val < 1) return;
+        const [place, cat] = r.key.split('::');
+        const id = goal ? goal.id : uid();
+        goals[r.key] = { id, target_days: val };
+        await sb.from('recurring_goals').upsert({ id, place, category: cat, target_days: val }, { onConflict: 'place,category' });
+        render();
+      });
     });
   }
+
+  function cssKey(key) { return key.replace(/[^a-zA-Z0-9]/g, '_'); }
 
   function renderSummary() {
     const summary = document.getElementById('summary');
