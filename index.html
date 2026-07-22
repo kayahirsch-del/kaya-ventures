@@ -64,7 +64,16 @@
   .vl-stage-validating { background: #F6D9E4; color: #9B3A63; }
   .vl-stage-building { background: #F0BFD4; color: #7A2745; }
   .vl-stage-live { background: #D8EEDD; color: #2C6E42; }
-  .vl-stage-shelved { background: #EDE7E9; color: #8C6472; }
+  .vl-stage-paused { background: #E2E1F0; color: #4E4A8A; }
+  .vl-stage-graveyard { background: #E4E1DC; color: #5C564D; }
+  .vl-section-head { display: flex; align-items: center; gap: 10px; margin: 32px 0 12px; cursor: pointer; }
+  .vl-section-head h2 { font-family: var(--font-display); font-style: italic; font-weight: 400; font-size: 17px; color: var(--text-secondary); margin: 0; }
+  .vl-section-count { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); }
+  .vl-section-line { flex: 1; height: 1px; background: var(--border); }
+  .vl-section-chevron { color: var(--text-muted); transition: transform 0.15s ease; font-style: normal; }
+  .vl-section-chevron.open { transform: rotate(90deg); }
+  .vl-section-body { display: none; }
+  .vl-section-body.open { display: block; }
   .vl-name { font-family: var(--font-display); font-size: 19px; font-weight: 500; flex: 1; color: var(--text-primary); }
   .vl-pitch { font-size: 12.5px; color: var(--text-secondary); max-width: 240px; text-align: right; }
   .vl-chevron { transition: transform 0.15s ease; color: var(--text-muted); font-style: normal; }
@@ -153,7 +162,8 @@
       <option value="validating">Validating</option>
       <option value="building">Building</option>
       <option value="live">Live</option>
-      <option value="shelved">Shelved</option>
+      <option value="paused">On pause</option>
+      <option value="graveyard">Graveyard</option>
     </select>
     <div class="vl-modal-actions">
       <button class="vl-btn-cancel" id="vl-modal-cancel">Cancel</button>
@@ -239,7 +249,43 @@
     if (data.ideas.length === 0) { empty.style.display = 'block'; return; }
     empty.style.display = 'none';
 
-    data.ideas.forEach(idea => {
+    const activeIdeas = data.ideas.filter(i => i.stage !== 'paused' && i.stage !== 'graveyard');
+    const pausedIdeas = data.ideas.filter(i => i.stage === 'paused');
+    const graveyardIdeas = data.ideas.filter(i => i.stage === 'graveyard');
+
+    activeIdeas.forEach(idea => list.appendChild(buildCard(idea)));
+
+    if (pausedIdeas.length > 0) {
+      list.appendChild(buildSection('On pause', pausedIdeas, 'pause'));
+    }
+    if (graveyardIdeas.length > 0) {
+      list.appendChild(buildSection('Graveyard', graveyardIdeas, 'graveyard'));
+    }
+  }
+
+  let sectionOpen = { pause: false, graveyard: false };
+
+  function buildSection(title, ideas, key) {
+    const wrap = document.createElement('div');
+    const head = document.createElement('div');
+    head.className = 'vl-section-head';
+    head.innerHTML = `
+      <h2>${title}</h2>
+      <span class="vl-section-count">${ideas.length}</span>
+      <span class="vl-section-line"></span>
+      <i class="vl-section-chevron${sectionOpen[key] ? ' open' : ''}">&#9656;</i>
+    `;
+    head.addEventListener('click', () => { sectionOpen[key] = !sectionOpen[key]; render(); });
+    wrap.appendChild(head);
+
+    const body = document.createElement('div');
+    body.className = 'vl-section-body' + (sectionOpen[key] ? ' open' : '');
+    ideas.forEach(idea => body.appendChild(buildCard(idea)));
+    wrap.appendChild(body);
+    return wrap;
+  }
+
+  function buildCard(idea) {
       const entries = (data.logs[idea.id] || []).slice().sort((a,b) => b.date - a.date);
       const card = document.createElement('div');
       card.className = 'vl-card';
@@ -262,9 +308,9 @@
         const metaRow = document.createElement('div');
         metaRow.className = 'vl-meta-row';
         const select = document.createElement('select');
-        ['spark','validating','building','live','shelved'].forEach(s => {
+        ['spark','validating','building','live','paused','graveyard'].forEach(s => {
           const opt = document.createElement('option');
-          opt.value = s; opt.textContent = s.charAt(0).toUpperCase() + s.slice(1);
+          opt.value = s; opt.textContent = s === 'paused' ? 'On pause' : s.charAt(0).toUpperCase() + s.slice(1);
           if (s === idea.stage) opt.selected = true;
           select.appendChild(opt);
         });
@@ -362,8 +408,7 @@
       }
 
       card.appendChild(body);
-      list.appendChild(card);
-    });
+      return card;
   }
 
   function escapeHtml(str) {
