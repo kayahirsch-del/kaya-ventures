@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Kaya Hirsch — Maintenance Log</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&family=Space+Mono&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+  :root {
+    --bg-page: #FBF0F2;
+    --bg-card: #FFFFFF;
+    --bg-card-alt: #FDF6F7;
+    --border: #F0CFDA;
+    --border-strong: #E4A6BC;
+    --rose: #B23A62;
+    --rose-deep: #7A2745;
+    --text-primary: #2E1B22;
+    --text-secondary: #8C6472;
+    --text-muted: #C79AAC;
+    --font-display: 'Fraunces', Georgia, serif;
+    --font-sans: 'Inter', -apple-system, sans-serif;
+    --font-mono: 'Space Mono', monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg-page);
+    background-image: radial-gradient(circle at 15% 0%, #FCE4EA 0%, transparent 45%);
+    font-family: var(--font-sans);
+    color: var(--text-primary);
+    min-height: 100vh;
+    padding: 48px 20px 80px;
+  }
+  #root { max-width: 740px; margin: 0 auto; }
+
+  .header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; border-bottom: 1px solid var(--border-strong); padding-bottom: 1.5rem; }
+  .eyebrow { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--rose); margin: 0 0 6px; }
+  .title { font-family: var(--font-display); font-style: italic; font-size: 34px; font-weight: 400; margin: 0; color: var(--rose-deep); }
+  .sub { font-size: 12px; color: var(--text-secondary); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 6px; }
+  .newbtn { background: var(--rose); color: #fff; border: none; border-radius: 30px; padding: 10px 20px; font-size: 13px; font-family: var(--font-sans); cursor: pointer; font-weight: 500; }
+  .newbtn:hover { background: var(--rose-deep); }
+  .signout { font-size: 11px; color: var(--text-muted); background: none; border: none; cursor: pointer; margin-left: 12px; }
+  .signout:hover { color: var(--rose-deep); }
+
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1.5rem; }
+  .filter-chip { font-size: 12px; font-family: var(--font-mono); padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border-strong); background: #fff; color: var(--text-secondary); cursor: pointer; }
+  .filter-chip.active { background: var(--rose); border-color: var(--rose); color: #fff; }
+
+  .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 2rem; }
+  .summary-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; }
+  .summary-card .cat { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--rose); }
+  .summary-card .last { font-family: var(--font-display); font-size: 15px; margin-top: 4px; color: var(--text-primary); }
+  .summary-card .count { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+  .entry-row { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 8px; }
+  .entry-date { font-family: var(--font-mono); font-size: 11px; color: var(--rose); min-width: 60px; }
+  .entry-cat { font-size: 10px; font-family: var(--font-mono); text-transform: uppercase; padding: 3px 9px; border-radius: 20px; background: #F6D9E4; color: #9B3A63; white-space: nowrap; }
+  .entry-place { font-family: var(--font-display); font-size: 14.5px; flex: 1; }
+  .entry-notes { font-size: 12px; color: var(--text-secondary); }
+  .entry-source { font-size: 9.5px; font-family: var(--font-mono); color: var(--text-muted); text-transform: uppercase; }
+  .entry-del { color: var(--text-muted); cursor: pointer; font-size: 12px; background: none; border: none; }
+  .entry-del:hover { color: var(--rose-deep); }
+
+  .empty { text-align: center; padding: 60px 20px; color: var(--text-secondary); font-family: var(--font-display); font-style: italic; font-size: 18px; }
+
+  .auth-wrap { max-width: 360px; margin: 15vh auto 0; text-align: center; }
+  .auth-wrap .eyebrow { justify-content: center; }
+  .auth-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 28px 24px; margin-top: 20px; text-align: left; }
+  .auth-card label { font-size: 11px; color: var(--text-secondary); display: block; margin: 12px 0 5px; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.04em; }
+  .auth-card label:first-child { margin-top: 0; }
+  .auth-card input { width: 100%; padding: 10px 12px; border: 1px solid var(--border-strong); border-radius: 10px; font-size: 13px; font-family: var(--font-sans); }
+  .auth-actions { display: flex; gap: 8px; margin-top: 18px; }
+  .auth-actions button { flex: 1; padding: 10px; border-radius: 20px; font-size: 13px; cursor: pointer; font-family: var(--font-sans); font-weight: 500; }
+  .auth-primary { border: none; background: var(--rose); color: #fff; }
+  .auth-primary:hover { background: var(--rose-deep); }
+  .auth-secondary { border: 1px solid var(--border-strong); background: none; color: var(--text-secondary); }
+  .auth-error { color: var(--rose-deep); font-size: 12px; margin-top: 12px; display: none; }
+
+  .modal-overlay { position: fixed; inset: 0; background: rgba(122, 39, 69, 0.25); display: none; align-items: flex-start; justify-content: center; padding-top: 80px; z-index: 10; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: #fff; border-radius: 16px; padding: 22px; width: 380px; max-width: 90%; border: 1px solid var(--border); }
+  .modal h3 { margin: 0 0 14px; font-size: 18px; font-family: var(--font-display); font-style: italic; color: var(--rose-deep); }
+  .modal label { font-size: 11px; color: var(--text-secondary); display: block; margin: 12px 0 5px; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.04em; }
+  .modal input, .modal select, .modal textarea { width: 100%; padding: 9px 12px; border: 1px solid var(--border-strong); border-radius: 10px; font-size: 13px; font-family: var(--font-sans); }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+  .modal-actions button { padding: 9px 18px; border-radius: 20px; font-size: 13px; cursor: pointer; font-family: var(--font-sans); font-weight: 500; }
+  .btn-cancel { border: 1px solid var(--border-strong); background: none; color: var(--text-secondary); }
+  .btn-save { border: none; background: var(--rose); color: #fff; }
+  .btn-save:hover { background: var(--rose-deep); }
+
+  .nav-link { font-size: 11px; font-family: var(--font-mono); color: var(--text-muted); text-decoration: none; }
+  .nav-link:hover { color: var(--rose-deep); }
+</style>
+</head>
+<body>
+
+<div id="auth-root" class="auth-wrap">
+  <p class="eyebrow">Kaya Hirsch</p>
+  <p class="title" style="text-align:center;">Maintenance log</p>
+  <div class="auth-card">
+    <label>Email</label>
+    <input id="auth-email" type="email" placeholder="you@email.com" />
+    <label>Password</label>
+    <input id="auth-password" type="password" placeholder="At least 6 characters" />
+    <div class="auth-actions">
+      <button class="auth-secondary" id="auth-signup">Sign up</button>
+      <button class="auth-primary" id="auth-signin">Log in</button>
+    </div>
+    <p class="auth-error" id="auth-error"></p>
+  </div>
+</div>
+
+<div id="root" style="display:none;">
+  <div class="header">
+    <div>
+      <p class="eyebrow">Kaya Hirsch <a href="index.html" class="nav-link" style="margin-left:8px;">venture log &rarr;</a></p>
+      <p class="title">Maintenance log</p>
+      <p class="sub"><span id="count">loading&hellip;</span><button class="signout" id="signout-btn">Sign out</button></p>
+    </div>
+    <button class="newbtn" id="new-btn">+ Log something</button>
+  </div>
+
+  <div id="summary" class="summary-grid"></div>
+
+  <div class="filters" id="filters"></div>
+
+  <div id="list"></div>
+  <p class="empty" id="empty" style="display:none;">Nothing logged yet — add your first one above.</p>
+</div>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <h3>Log something</h3>
+    <label>Category</label>
+    <select id="modal-category">
+      <option value="hair">Hair</option>
+      <option value="nails">Nails</option>
+      <option value="facial">Facial</option>
+      <option value="massage">Massage</option>
+      <option value="injectables">Injectables</option>
+      <option value="waxing_threading">Waxing / threading</option>
+      <option value="skincare">Skincare / derm</option>
+      <option value="wellness">Wellness</option>
+      <option value="dental">Dental</option>
+      <option value="other">Other</option>
+    </select>
+    <label>Place / provider</label>
+    <input id="modal-place" placeholder="e.g. Saint NYC, Dr. Airan" />
+    <label>Date</label>
+    <input id="modal-date" type="date" />
+    <label>Notes</label>
+    <input id="modal-notes" placeholder="Optional — units, product, how it went" />
+    <div class="modal-actions">
+      <button class="btn-cancel" id="modal-cancel">Cancel</button>
+      <button class="btn-save" id="modal-save">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const SUPABASE_URL = 'https://rtztcvvkzyqjunyctxbh.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0enRjdnZrenlxanVueWN0eGJoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3Mjk3OTIsImV4cCI6MjEwMDMwNTc5Mn0.28THw1ckqCgFqGWLstg_Yi3j_emyfzZ5J5FyIs0juII';
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const CATEGORIES = ['hair','nails','facial','massage','injectables','waxing_threading','skincare','wellness','dental','other'];
+  const CAT_LABELS = { waxing_threading: 'Waxing / threading', injectables: 'Injectables', skincare: 'Skincare / derm' };
+  function labelFor(cat) { return CAT_LABELS[cat] || (cat.charAt(0).toUpperCase() + cat.slice(1)); }
+
+  let entries = [];
+  let activeFilter = null;
+
+  function uid() { return crypto.randomUUID ? crypto.randomUUID() : 'i' + Date.now() + Math.floor(Math.random()*1000); }
+  function fmtDate(d) {
+    return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  function showAuth() { document.getElementById('auth-root').style.display = 'block'; document.getElementById('root').style.display = 'none'; }
+  function showApp() { document.getElementById('auth-root').style.display = 'none'; document.getElementById('root').style.display = 'block'; }
+  function authError(msg) {
+    const el = document.getElementById('auth-error');
+    el.textContent = msg;
+    el.style.display = msg ? 'block' : 'none';
+  }
+
+  document.getElementById('auth-signup').addEventListener('click', async () => {
+    authError('');
+    const email = document.getElementById('auth-email').value.trim();
+    const password = document.getElementById('auth-password').value;
+    const { error } = await sb.auth.signUp({ email, password });
+    if (error) { authError(error.message); return; }
+    authError('Account created — check your email to confirm, then log in.');
+  });
+  document.getElementById('auth-signin').addEventListener('click', async () => {
+    authError('');
+    const email = document.getElementById('auth-email').value.trim();
+    const password = document.getElementById('auth-password').value;
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) { authError(error.message); return; }
+  });
+  document.getElementById('signout-btn').addEventListener('click', async () => { await sb.auth.signOut(); });
+
+  sb.auth.onAuthStateChange((event, session) => {
+    if (session) { showApp(); load(); } else { showAuth(); }
+  });
+
+  async function load() {
+    const { data, error } = await sb.from('maintenance_log').select('*').order('entry_date', { ascending: false });
+    if (error) { console.error(error); return; }
+    entries = (data || []).map(r => ({ id: r.id, category: r.category, place: r.place, provider: r.provider, date: Number(r.entry_date), notes: r.notes, source: r.source }));
+    render();
+  }
+
+  function render() {
+    const count = document.getElementById('count');
+    count.textContent = entries.length + (entries.length === 1 ? ' entry logged' : ' entries logged');
+
+    renderSummary();
+    renderFilters();
+    renderList();
+  }
+
+  function renderSummary() {
+    const summary = document.getElementById('summary');
+    summary.innerHTML = '';
+    const byCat = {};
+    entries.forEach(e => {
+      if (!byCat[e.category]) byCat[e.category] = [];
+      byCat[e.category].push(e);
+    });
+    Object.keys(byCat).sort((a,b) => byCat[b][0].date - byCat[a][0].date).forEach(cat => {
+      const list = byCat[cat].sort((a,b) => b.date - a.date);
+      const card = document.createElement('div');
+      card.className = 'summary-card';
+      card.innerHTML = `
+        <div class="cat">${labelFor(cat)}</div>
+        <div class="last">${fmtDate(list[0].date)}</div>
+        <div class="count">${list.length} logged</div>
+      `;
+      summary.appendChild(card);
+    });
+  }
+
+  function renderFilters() {
+    const filters = document.getElementById('filters');
+    filters.innerHTML = '';
+    const usedCats = [...new Set(entries.map(e => e.category))];
+    const allChip = document.createElement('button');
+    allChip.className = 'filter-chip' + (activeFilter === null ? ' active' : '');
+    allChip.textContent = 'All';
+    allChip.addEventListener('click', () => { activeFilter = null; render(); });
+    filters.appendChild(allChip);
+    usedCats.forEach(cat => {
+      const chip = document.createElement('button');
+      chip.className = 'filter-chip' + (activeFilter === cat ? ' active' : '');
+      chip.textContent = labelFor(cat);
+      chip.addEventListener('click', () => { activeFilter = cat; render(); });
+      filters.appendChild(chip);
+    });
+  }
+
+  function renderList() {
+    const list = document.getElementById('list');
+    const empty = document.getElementById('empty');
+    list.innerHTML = '';
+    const shown = activeFilter ? entries.filter(e => e.category === activeFilter) : entries;
+    if (shown.length === 0) { empty.style.display = 'block'; return; }
+    empty.style.display = 'none';
+
+    shown.forEach(e => {
+      const row = document.createElement('div');
+      row.className = 'entry-row';
+      row.innerHTML = `
+        <span class="entry-date">${fmtDate(e.date)}</span>
+        <span class="entry-cat">${labelFor(e.category)}</span>
+        <span class="entry-place">${escapeHtml(e.place || e.provider || '')}${e.notes ? ' — <span class=\"entry-notes\">' + escapeHtml(e.notes) + '</span>' : ''}</span>
+        <span class="entry-source">${escapeHtml(e.source || '')}</span>
+      `;
+      const delBtn = document.createElement('button');
+      delBtn.className = 'entry-del';
+      delBtn.textContent = '\u2715';
+      delBtn.addEventListener('click', async () => {
+        entries = entries.filter(x => x.id !== e.id);
+        render();
+        await sb.from('maintenance_log').delete().eq('id', e.id);
+      });
+      row.appendChild(delBtn);
+      list.appendChild(row);
+    });
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  document.getElementById('new-btn').addEventListener('click', () => {
+    document.getElementById('modal-category').value = 'hair';
+    document.getElementById('modal-place').value = '';
+    document.getElementById('modal-date').value = new Date().toISOString().slice(0,10);
+    document.getElementById('modal-notes').value = '';
+    document.getElementById('modal-overlay').classList.add('open');
+  });
+  document.getElementById('modal-cancel').addEventListener('click', () => {
+    document.getElementById('modal-overlay').classList.remove('open');
+  });
+  document.getElementById('modal-save').addEventListener('click', async () => {
+    const category = document.getElementById('modal-category').value;
+    const place = document.getElementById('modal-place').value.trim();
+    const dateVal = document.getElementById('modal-date').value;
+    const notes = document.getElementById('modal-notes').value.trim();
+    if (!dateVal) return;
+    const entry = { id: uid(), category, place, provider: null, date: new Date(dateVal + 'T12:00:00').getTime(), notes, source: 'manual' };
+    entries.unshift(entry);
+    document.getElementById('modal-overlay').classList.remove('open');
+    render();
+    await sb.from('maintenance_log').insert({ id: entry.id, category: entry.category, place: entry.place, entry_date: entry.date, notes: entry.notes, source: entry.source });
+  });
+
+  sb.auth.getSession().then(({ data: { session } }) => {
+    if (session) { showApp(); load(); } else { showAuth(); }
+  });
+})();
+</script>
+</body>
+</html>
