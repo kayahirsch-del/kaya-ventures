@@ -224,7 +224,7 @@
       logs[row.idea_id].push({ id: row.id, text: row.entry_text, date: Number(row.entry_date) });
     });
     data = {
-      ideas: (ideaRows || []).map(r => ({ id: r.id, name: r.name, pitch: r.pitch, stage: r.stage, created: Number(r.created) })),
+      ideas: (ideaRows || []).map(r => ({ id: r.id, name: r.name, pitch: r.pitch, stage: r.stage, created: Number(r.created), summary: r.summary, links: r.links || [] })),
       logs: logs
     };
     render();
@@ -286,6 +286,28 @@
         });
         metaRow.appendChild(delIdeaBtn);
         body.appendChild(metaRow);
+
+        if (idea.summary) {
+          const summaryEl = document.createElement('p');
+          summaryEl.style.cssText = 'font-size:13px;line-height:1.6;color:var(--text-primary);margin:10px 0 0;';
+          summaryEl.textContent = idea.summary;
+          body.appendChild(summaryEl);
+        }
+
+        if (idea.links && idea.links.length > 0) {
+          const linksWrap = document.createElement('div');
+          linksWrap.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;';
+          idea.links.forEach(link => {
+            const a = document.createElement('a');
+            a.href = link.url;
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+            a.textContent = link.label || link.url;
+            a.style.cssText = 'font-size:11.5px;font-family:var(--font-mono);color:var(--rose-deep);background:#F6D9E4;padding:4px 10px;border-radius:20px;text-decoration:none;';
+            linksWrap.appendChild(a);
+          });
+          body.appendChild(linksWrap);
+        }
 
         if (entries.length === 0) {
           const p = document.createElement('p');
