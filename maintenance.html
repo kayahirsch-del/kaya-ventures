@@ -8,7 +8,38 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&family=Space+Mono&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
+  .tabs { display: flex; gap: 4px; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+  .tab-btn { font-family: var(--font-mono); font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; padding: 10px 16px; background: none; border: none; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .tab-btn.active { color: var(--rose-deep); border-bottom-color: var(--rose); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+  .cal-header h3 { font-family: var(--font-display); font-style: italic; font-size: 18px; margin: 0; color: var(--rose-deep); font-weight: 400; }
+  .cal-nav { background: none; border: 1px solid var(--border-strong); border-radius: 20px; padding: 6px 12px; cursor: pointer; font-size: 13px; color: var(--text-secondary); }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .cal-dow { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; color: var(--text-muted); text-align: center; padding-bottom: 4px; }
+  .cal-day { min-height: 56px; border: 1px solid var(--border); border-radius: 8px; padding: 6px; font-size: 12px; color: var(--text-secondary); background: var(--bg-card); cursor: default; }
+  .cal-day.has-entry { background: #F6D9E4; border-color: var(--border-strong); cursor: pointer; }
+  .cal-day.empty-cell { border: none; background: none; }
+  .cal-day .daynum { font-family: var(--font-mono); font-size: 11px; }
+  .cal-day .dots { display: flex; gap: 2px; margin-top: 4px; flex-wrap: wrap; }
+  .cal-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--rose); }
+  .cal-day-detail { margin-top: 1rem; }
+
+  #map-canvas { height: 420px; border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
+  .map-note { font-size: 11px; color: var(--text-muted); margin-top: 8px; }
+
+  .recur-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 18px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .recur-name { font-family: var(--font-display); font-size: 15.5px; }
+  .recur-cat { font-size: 10px; font-family: var(--font-mono); text-transform: uppercase; color: var(--text-muted); }
+  .recur-stat { text-align: right; }
+  .recur-freq { font-family: var(--font-mono); font-size: 13px; color: var(--rose-deep); }
+  .recur-count { font-size: 11px; color: var(--text-muted); }
+
   :root {
     --bg-page: #FBF0F2;
     --bg-card: #FFFFFF;
@@ -125,10 +156,37 @@
 
   <div id="summary" class="summary-grid"></div>
 
-  <div class="filters" id="filters"></div>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="timeline">Timeline</button>
+    <button class="tab-btn" data-tab="calendar">Calendar</button>
+    <button class="tab-btn" data-tab="map">Map</button>
+    <button class="tab-btn" data-tab="recurring">Recurring</button>
+  </div>
 
-  <div id="list"></div>
-  <p class="empty" id="empty" style="display:none;">Nothing logged yet — add your first one above.</p>
+  <div class="tab-panel active" id="panel-timeline">
+    <div class="filters" id="filters"></div>
+    <div id="list"></div>
+    <p class="empty" id="empty" style="display:none;">Nothing logged yet — add your first one above.</p>
+  </div>
+
+  <div class="tab-panel" id="panel-calendar">
+    <div class="cal-header">
+      <button class="cal-nav" id="cal-prev">&larr;</button>
+      <h3 id="cal-title"></h3>
+      <button class="cal-nav" id="cal-next">&rarr;</button>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+    <div class="cal-day-detail" id="cal-day-detail"></div>
+  </div>
+
+  <div class="tab-panel" id="panel-map">
+    <div id="map-canvas"></div>
+    <p class="map-note">Markers group entries by place. A couple of locations are approximate where I didn't have an exact address.</p>
+  </div>
+
+  <div class="tab-panel" id="panel-recurring">
+    <div id="recurring-list"></div>
+  </div>
 </div>
 
 <div class="modal-overlay" id="modal-overlay">
@@ -210,7 +268,7 @@
   async function load() {
     const { data, error } = await sb.from('maintenance_log').select('*').order('entry_date', { ascending: false });
     if (error) { console.error(error); return; }
-    entries = (data || []).map(r => ({ id: r.id, category: r.category, place: r.place, provider: r.provider, date: Number(r.entry_date), notes: r.notes, source: r.source }));
+    entries = (data || []).map(r => ({ id: r.id, category: r.category, place: r.place, provider: r.provider, date: Number(r.entry_date), notes: r.notes, source: r.source, address: r.address, lat: r.lat, lng: r.lng }));
     render();
   }
 
@@ -221,6 +279,192 @@
     renderSummary();
     renderFilters();
     renderList();
+    renderCalendar();
+    renderRecurring();
+    if (mapReady) renderMap();
+  }
+
+  // ---- Tabs ----
+  let mapReady = false;
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+      if (btn.dataset.tab === 'map') {
+        if (!mapReady) { initMap(); mapReady = true; }
+        setTimeout(() => { if (leafletMap) leafletMap.invalidateSize(); }, 50);
+      }
+    });
+  });
+
+  // ---- Calendar ----
+  let calYear = new Date().getFullYear();
+  let calMonth = new Date().getMonth();
+  let selectedDay = null;
+
+  document.getElementById('cal-prev').addEventListener('click', () => {
+    calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; }
+    selectedDay = null;
+    renderCalendar();
+  });
+  document.getElementById('cal-next').addEventListener('click', () => {
+    calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; }
+    selectedDay = null;
+    renderCalendar();
+  });
+
+  function renderCalendar() {
+    const grid = document.getElementById('cal-grid');
+    const title = document.getElementById('cal-title');
+    if (!grid) return;
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    title.textContent = monthNames[calMonth] + ' ' + calYear;
+    grid.innerHTML = '';
+    ['S','M','T','W','T','F','S'].forEach(d => {
+      const el = document.createElement('div');
+      el.className = 'cal-dow';
+      el.textContent = d;
+      grid.appendChild(el);
+    });
+
+    const firstDay = new Date(calYear, calMonth, 1).getDay();
+    const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+
+    const byDay = {};
+    entries.forEach(e => {
+      const d = new Date(e.date);
+      if (d.getFullYear() === calYear && d.getMonth() === calMonth) {
+        const day = d.getDate();
+        if (!byDay[day]) byDay[day] = [];
+        byDay[day].push(e);
+      }
+    });
+
+    for (let i = 0; i < firstDay; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'cal-day empty-cell';
+      grid.appendChild(cell);
+    }
+    for (let day = 1; day <= daysInMonth; day++) {
+      const cell = document.createElement('div');
+      const hasEntries = byDay[day] && byDay[day].length > 0;
+      cell.className = 'cal-day' + (hasEntries ? ' has-entry' : '');
+      cell.innerHTML = `<div class="daynum">${day}</div>`;
+      if (hasEntries) {
+        const dots = document.createElement('div');
+        dots.className = 'dots';
+        byDay[day].slice(0, 5).forEach(() => {
+          const dot = document.createElement('span');
+          dot.className = 'cal-dot';
+          dots.appendChild(dot);
+        });
+        cell.appendChild(dots);
+        cell.addEventListener('click', () => { selectedDay = day; renderCalDayDetail(byDay[day]); });
+      }
+      grid.appendChild(cell);
+    }
+
+    if (selectedDay && byDay[selectedDay]) renderCalDayDetail(byDay[selectedDay]);
+    else document.getElementById('cal-day-detail').innerHTML = '';
+  }
+
+  function renderCalDayDetail(dayEntries) {
+    const detail = document.getElementById('cal-day-detail');
+    detail.innerHTML = '';
+    dayEntries.forEach(e => {
+      const row = document.createElement('div');
+      row.className = 'entry-row';
+      row.innerHTML = `
+        <span class="entry-cat">${labelFor(e.category)}</span>
+        <span class="entry-place">${escapeHtml(e.place || e.provider || '')}${e.notes ? ' — <span class=\"entry-notes\">' + escapeHtml(e.notes) + '</span>' : ''}</span>
+      `;
+      detail.appendChild(row);
+    });
+  }
+
+  // ---- Map ----
+  let leafletMap = null;
+  let mapLayer = null;
+  function initMap() {
+    leafletMap = L.map('map-canvas').setView([40.73, -73.99], 11);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(leafletMap);
+    mapLayer = L.layerGroup().addTo(leafletMap);
+    renderMap();
+  }
+
+  function renderMap() {
+    if (!mapLayer) return;
+    mapLayer.clearLayers();
+    const byPlace = {};
+    entries.forEach(e => {
+      if (e.lat == null || e.lng == null) return;
+      const key = e.place || 'Unknown';
+      if (!byPlace[key]) byPlace[key] = { lat: e.lat, lng: e.lng, entries: [] };
+      byPlace[key].entries.push(e);
+    });
+    const bounds = [];
+    Object.keys(byPlace).forEach(place => {
+      const g = byPlace[place];
+      bounds.push([g.lat, g.lng]);
+      const marker = L.marker([g.lat, g.lng]);
+      const cats = [...new Set(g.entries.map(e => labelFor(e.category)))].join(', ');
+      marker.bindPopup(`<b>${escapeHtml(place)}</b><br>${g.entries.length} visit${g.entries.length > 1 ? 's' : ''} — ${escapeHtml(cats)}`);
+      marker.addTo(mapLayer);
+    });
+    if (bounds.length > 0) leafletMap.fitBounds(bounds, { padding: [30, 30] });
+  }
+
+  // ---- Recurring ----
+  function renderRecurring() {
+    const list = document.getElementById('recurring-list');
+    if (!list) return;
+    list.innerHTML = '';
+    const byKey = {};
+    entries.forEach(e => {
+      const key = (e.place || e.provider || 'Unknown') + '::' + e.category;
+      if (!byKey[key]) byKey[key] = [];
+      byKey[key].push(e);
+    });
+    const recurring = Object.keys(byKey)
+      .map(key => {
+        const list = byKey[key].sort((a,b) => a.date - b.date);
+        const [name, cat] = key.split('::');
+        let avgGapDays = null;
+        if (list.length > 1) {
+          const gaps = [];
+          for (let i = 1; i < list.length; i++) gaps.push((list[i].date - list[i-1].date) / 86400000);
+          avgGapDays = gaps.reduce((a,b) => a+b, 0) / gaps.length;
+        }
+        return { name, cat, count: list.length, avgGapDays, last: list[list.length-1].date };
+      })
+      .filter(r => r.count >= 2)
+      .sort((a,b) => b.count - a.count);
+
+    if (recurring.length === 0) {
+      list.innerHTML = '<p class="empty">Nothing recurring yet — log the same place twice and it\'ll show up here.</p>';
+      return;
+    }
+
+    recurring.forEach(r => {
+      const card = document.createElement('div');
+      card.className = 'recur-card';
+      const freqText = r.avgGapDays < 10 ? `every ${Math.round(r.avgGapDays)} days` : `every ${Math.round(r.avgGapDays / 7)} weeks`;
+      card.innerHTML = `
+        <div>
+          <div class="recur-name">${escapeHtml(r.name)}</div>
+          <div class="recur-cat">${labelFor(r.cat)}</div>
+        </div>
+        <div class="recur-stat">
+          <div class="recur-freq">${freqText}</div>
+          <div class="recur-count">${r.count} visits · last ${fmtDate(r.last)}</div>
+        </div>
+      `;
+      list.appendChild(card);
+    });
   }
 
   function renderSummary() {
