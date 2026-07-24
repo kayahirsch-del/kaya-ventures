@@ -132,6 +132,21 @@
   .modal form input, .modal form textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--border-strong); border-radius: 10px; font-size: 13px; font-family: var(--font-sans); background: #fff; }
   .modal form textarea { resize: vertical; min-height: 64px; }
   .modal form input:focus, .modal form textarea:focus { outline: none; border-color: var(--rose); }
+  .slot-tz { text-transform: none; letter-spacing: 0; color: var(--text-muted); }
+
+  .date-strip { display: flex; gap: 6px; overflow-x: auto; padding: 2px 2px 8px; }
+  .date-chip { flex: 0 0 auto; width: 50px; padding: 8px 4px; border: 1px solid var(--border-strong); border-radius: 10px; text-align: center; cursor: pointer; background: #fff; -webkit-tap-highlight-color: transparent; }
+  .date-chip .dow { font-family: var(--font-mono); font-size: 9.5px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.03em; }
+  .date-chip .num { font-size: 15px; font-weight: 600; color: var(--text-primary); margin-top: 2px; }
+  .date-chip:hover { border-color: var(--rose); }
+  .date-chip.selected { background: var(--rose-deep); border-color: var(--rose-deep); }
+  .date-chip.selected .dow, .date-chip.selected .num { color: #fff; }
+
+  .time-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; max-height: 168px; overflow-y: auto; padding: 2px; }
+  .time-slot { padding: 8px 6px; border: 1px solid var(--border-strong); border-radius: 8px; text-align: center; font-size: 12px; font-family: var(--font-sans); cursor: pointer; background: #fff; -webkit-tap-highlight-color: transparent; }
+  .time-slot:hover { border-color: var(--rose); }
+  .time-slot.selected { background: var(--rose-deep); border-color: var(--rose-deep); color: #fff; }
+  .slot-summary { font-size: 12px; color: var(--rose-deep); font-weight: 600; margin: 8px 0 0; }
   .modal .btn-primary { margin-top: 20px; width: 100%; padding: 11px; }
   .modal .btn-primary:disabled { opacity: 0.6; cursor: default; transform: none; }
   .form-msg { font-size: 12.5px; margin-top: 14px; display: none; }
@@ -217,7 +232,7 @@
   <div class="modal">
     <button class="modal-close" id="modal-close" aria-label="Close">&#10005;</button>
     <h3>Let's chat</h3>
-    <p class="modal-sub">Tell me a bit about what you'd like to talk about and a few times that work for you — I'll follow up by email to lock in a slot.</p>
+    <p class="modal-sub">Tell me a bit about what you'd like to talk about and pick a time that works for you — I'll follow up by email to confirm.</p>
     <form id="mt-form">
       <label>Name</label>
       <input id="mt-name" required placeholder="Your name" />
@@ -225,8 +240,10 @@
       <input id="mt-email" type="email" required placeholder="you@email.com" />
       <label>What do you want to talk about?</label>
       <input id="mt-topic" placeholder="e.g. product feedback, potential collab" />
-      <label>A few times that work for you</label>
-      <input id="mt-times" placeholder="e.g. Tues or Wed afternoon, PT" />
+      <label>Pick a date &amp; time <span class="slot-tz">(ET)</span></label>
+      <div class="date-strip" id="date-strip"></div>
+      <div class="time-grid" id="time-grid"></div>
+      <p class="slot-summary" id="slot-summary">Select a time above</p>
       <label>Anything else?</label>
       <textarea id="mt-message" placeholder="Optional message"></textarea>
       <button type="submit" class="btn-primary" id="mt-submit-btn">Request time</button>
@@ -286,6 +303,86 @@
     });
   }
 
+  const SLOT_START_HOUR = 9, SLOT_END_HOUR = 18, SLOT_DAYS_AHEAD = 14;
+  let slotDates = [];
+  let selectedDateIdx = 0;
+  let selectedSlot = null;
+
+  function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+  function fmtSlotTime(h, m) {
+    const period = h < 12 ? 'AM' : 'PM';
+    const h12 = ((h + 11) % 12) + 1;
+    return h12 + ':' + pad2(m) + ' ' + period;
+  }
+  function buildSlotDates() {
+    const dates = [];
+    const start = new Date();
+    start.setDate(start.getDate() + 1);
+    start.setHours(0, 0, 0, 0);
+    for (let i = 0; i < SLOT_DAYS_AHEAD; i++) {
+      const d = new Date(start);
+      d.setDate(start.getDate() + i);
+      dates.push(d);
+    }
+    return dates;
+  }
+  function buildTimeSlots() {
+    const slots = [];
+    for (let h = SLOT_START_HOUR; h <= SLOT_END_HOUR; h++) {
+      slots.push({ h: h, m: 0 });
+      slots.push({ h: h, m: 30 });
+    }
+    return slots;
+  }
+  function updateSlotSummary() {
+    const el = document.getElementById('slot-summary');
+    if (!selectedSlot) { el.textContent = 'Select a time above'; return; }
+    const d = slotDates[selectedDateIdx];
+    const dateLabel = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    el.textContent = dateLabel + ' · ' + fmtSlotTime(selectedSlot.h, selectedSlot.m) + ' ET';
+  }
+  function renderTimeGrid() {
+    const grid = document.getElementById('time-grid');
+    grid.innerHTML = '';
+    buildTimeSlots().forEach(slot => {
+      const btn = document.createElement('div');
+      btn.className = 'time-slot' + (selectedSlot && selectedSlot.h === slot.h && selectedSlot.m === slot.m ? ' selected' : '');
+      btn.textContent = fmtSlotTime(slot.h, slot.m);
+      btn.addEventListener('click', () => {
+        selectedSlot = slot;
+        renderTimeGrid();
+        updateSlotSummary();
+      });
+      grid.appendChild(btn);
+    });
+  }
+  function renderDateStrip() {
+    const strip = document.getElementById('date-strip');
+    strip.innerHTML = '';
+    slotDates.forEach((d, idx) => {
+      const chip = document.createElement('div');
+      chip.className = 'date-chip' + (idx === selectedDateIdx ? ' selected' : '');
+      chip.innerHTML = '<div class="dow">' + d.toLocaleDateString('en-US', { weekday: 'short' }) + '</div><div class="num">' + d.getDate() + '</div>';
+      chip.addEventListener('click', () => {
+        selectedDateIdx = idx;
+        selectedSlot = null;
+        renderDateStrip();
+        renderTimeGrid();
+        updateSlotSummary();
+      });
+      strip.appendChild(chip);
+    });
+  }
+  function resetSlotPicker() {
+    slotDates = buildSlotDates();
+    selectedDateIdx = 0;
+    selectedSlot = null;
+    renderDateStrip();
+    renderTimeGrid();
+    updateSlotSummary();
+  }
+  resetSlotPicker();
+
   const overlay = document.getElementById('modal-overlay');
   function openModal() {
     overlay.classList.add('open');
@@ -310,9 +407,15 @@
     const name = document.getElementById('mt-name').value.trim();
     const email = document.getElementById('mt-email').value.trim();
     const topic = document.getElementById('mt-topic').value.trim();
-    const times = document.getElementById('mt-times').value.trim();
     const message = document.getElementById('mt-message').value.trim();
     if (!name || !email) return;
+    if (!selectedSlot) {
+      msgEl.textContent = 'Please pick a date and time.';
+      msgEl.className = 'form-msg err';
+      return;
+    }
+    const selDate = slotDates[selectedDateIdx];
+    const preferredTimes = selDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) + ' · ' + fmtSlotTime(selectedSlot.h, selectedSlot.m) + ' ET';
 
     btn.disabled = true;
     const row = {
@@ -320,7 +423,7 @@
       name: name,
       email: email,
       topic: topic,
-      preferred_times: times,
+      preferred_times: preferredTimes,
       message: message,
       status: 'new',
       created_at: Date.now()
@@ -333,8 +436,9 @@
       msgEl.className = 'form-msg err';
       return;
     }
-    if (window.posthog) posthog.capture('meeting_request_submitted', { topic: topic });
+    if (window.posthog) posthog.capture('meeting_request_submitted', { topic: topic, slot: preferredTimes });
     document.getElementById('mt-form').reset();
+    resetSlotPicker();
     msgEl.textContent = "Thanks! I'll email you to confirm a time.";
     msgEl.className = 'form-msg ok';
   });
