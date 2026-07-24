@@ -5,7 +5,6 @@ Kaya Hirsch's site: a public home page (meet-with-me + products) plus a private,
 ## Pages
 - `index.html` — public home page. "Book time with me" request form (no login) and a list of live products, both backed by Supabase. Includes a "Sign in" link in the corner to the venture log.
 - `venture-log.html` — private, login-gated build log for tracking startup ideas (Supabase auth).
-- `maintenance.html` — private, login-gated home maintenance log.
 - `requests.html` — private, login-gated view of incoming meeting requests submitted on the home page.
 
 ## Deploy to GitHub Pages
@@ -19,4 +18,4 @@ A `CNAME` file pointing at `kayahirsch.com` is included. To finish wiring it up:
 2. At your domain registrar, point DNS at GitHub Pages — either an `A` record for the apex domain to GitHub's Pages IPs, or a `CNAME` record if you're using a `www` subdomain. See https://docs.github.com/pages/configuring-a-custom-domain-for-your-github-pages-site.
 
 ## Analytics (PostHog)
-`index.html` is wired up to a PostHog project (US Cloud). It tracks page views/autocapture plus custom events: `book_time_clicked`, `meeting_request_submitted`, and `product_link_clicked` (with which product/URL). Check the events in your PostHog dashboard at https://us.posthog.com. The same snippet can be copied into `venture-log.html` or `maintenance.html` to track those tools too — just reuse the same `posthog.init(...)` call.
+`index.html` is wired up to a PostHog project (US Cloud). It tracks page views/autocapture plus custom events: `book_time_clicked`, `meeting_request_submitted`, and `product_link_clicked` (with which product/URL). Check the events in your PostHog dashboard at https://us.posthog.com. The same snippet can be copied into `venture-log.html` to track that tool too — just reuse the same `posthog.init(...)` call.
