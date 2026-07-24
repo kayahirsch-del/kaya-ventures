@@ -4,10 +4,10 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Kaya Hirsch</title>
-<meta name="description" content="Book time with Kaya Hirsch and see the products she's building." />
+<meta name="description" content="Products by Kaya Hirsch — and time to talk about what's next." />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&family=Space+Mono&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;1,400;1,500&family=Inter:wght@400;500;600&family=Space+Mono&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 
 <!--
@@ -39,102 +39,150 @@
     --font-display: 'Fraunces', Georgia, serif;
     --font-sans: 'Inter', -apple-system, sans-serif;
     --font-mono: 'Space Mono', monospace;
+    --shadow-card: 0 1px 2px rgba(122, 39, 69, 0.04), 0 8px 24px rgba(122, 39, 69, 0.06);
+    --shadow-card-hover: 0 4px 10px rgba(122, 39, 69, 0.06), 0 16px 32px rgba(122, 39, 69, 0.1);
   }
   * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
   body {
     margin: 0;
     background: var(--bg-page);
-    background-image: radial-gradient(circle at 15% 0%, #FCE4EA 0%, transparent 45%);
+    background-image:
+      radial-gradient(circle at 12% 0%, #FCE4EA 0%, transparent 42%),
+      radial-gradient(circle at 100% 20%, #FBEAEE 0%, transparent 38%);
     font-family: var(--font-sans);
     color: var(--text-primary);
     min-height: 100vh;
-    padding: 48px 20px 80px;
   }
-  #mt-root { max-width: 720px; margin: 0 auto; }
 
-  .mt-eyebrow { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--rose); margin: 0 0 6px; }
-  .mt-hero { text-align: center; margin-bottom: 3rem; }
-  .mt-title { font-family: var(--font-display); font-style: italic; font-size: 40px; font-weight: 400; margin: 0; color: var(--rose-deep); }
-  .mt-sub { font-size: 14px; color: var(--text-secondary); max-width: 480px; margin: 12px auto 0; line-height: 1.6; }
+  /* Nav */
+  .nav { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; justify-content: space-between; padding: 18px 32px; background: rgba(251, 240, 242, 0.78); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); }
+  .nav-brand { font-family: var(--font-display); font-style: italic; font-size: 19px; color: var(--rose-deep); text-decoration: none; }
+  .nav-actions { display: flex; align-items: center; gap: 18px; }
+  .nav-signin { font-size: 12px; color: var(--text-muted); text-decoration: none; }
+  .nav-signin:hover { color: var(--rose-deep); }
+  .btn-primary { border: none; background: var(--rose); color: #fff; border-radius: 30px; padding: 10px 20px; font-size: 13px; font-family: var(--font-sans); font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(178, 58, 98, 0.28); transition: background 0.15s ease, transform 0.15s ease; }
+  .btn-primary:hover { background: var(--rose-deep); transform: translateY(-1px); }
 
-  .mt-section { margin-bottom: 3rem; }
-  .mt-section-head { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
-  .mt-section-head h2 { font-family: var(--font-display); font-style: italic; font-weight: 400; font-size: 20px; color: var(--rose-deep); margin: 0; }
-  .mt-section-line { flex: 1; height: 1px; background: var(--border); }
+  /* Layout */
+  .page { max-width: 880px; margin: 0 auto; padding: 0 24px 100px; }
 
-  .mt-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; }
+  /* Hero */
+  .hero { text-align: center; padding: 80px 20px 64px; }
+  .avatar { width: 56px; height: 56px; border-radius: 50%; margin: 0 auto 22px; background: linear-gradient(135deg, var(--rose), var(--rose-deep)); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-style: italic; font-size: 22px; color: #fff; box-shadow: 0 6px 20px rgba(178, 58, 98, 0.3); }
+  .eyebrow { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--rose); margin: 0 0 14px; }
+  .hero h1 { font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: clamp(30px, 5vw, 46px); line-height: 1.18; margin: 0 auto; max-width: 620px; color: var(--rose-deep); }
+  .hero p { font-size: 15px; color: var(--text-secondary); max-width: 460px; margin: 18px auto 30px; line-height: 1.65; }
 
-  .mt-form label { font-size: 11px; color: var(--text-secondary); display: block; margin: 14px 0 5px; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.04em; }
-  .mt-form label:first-child { margin-top: 0; }
-  .mt-form input, .mt-form textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--border-strong); border-radius: 10px; font-size: 13px; font-family: var(--font-sans); background: #fff; }
-  .mt-form textarea { resize: vertical; min-height: 70px; }
-  .mt-form input:focus, .mt-form textarea:focus { outline: none; border-color: var(--rose); }
-  .mt-submit { margin-top: 20px; border: none; background: var(--rose); color: #fff; border-radius: 30px; padding: 11px 24px; font-size: 13px; font-family: var(--font-sans); font-weight: 500; cursor: pointer; }
-  .mt-submit:hover { background: var(--rose-deep); }
-  .mt-submit:disabled { opacity: 0.6; cursor: default; }
-  .mt-form-msg { font-size: 12.5px; margin-top: 14px; display: none; }
-  .mt-form-msg.ok { color: #2C6E42; display: block; }
-  .mt-form-msg.err { color: var(--rose-deep); display: block; }
+  /* Section headings */
+  .section { margin-top: 76px; }
+  .section-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 28px; }
+  .section-head h2 { font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: 24px; color: var(--rose-deep); margin: 0; }
+  .section-line { flex: 1; height: 1px; background: var(--border); }
+  .section-count { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); }
 
-  .mt-products { display: grid; gap: 14px; }
-  .mt-product { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px 22px; }
-  .mt-product-name { font-family: var(--font-display); font-size: 19px; font-weight: 500; color: var(--text-primary); margin: 0 0 6px; }
-  .mt-product-pitch { font-size: 13px; color: var(--text-secondary); line-height: 1.55; margin: 0; }
-  .mt-product-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
-  .mt-product-links a { font-size: 11.5px; font-family: var(--font-mono); color: var(--rose-deep); background: #F6D9E4; padding: 5px 12px; border-radius: 20px; text-decoration: none; }
-  .mt-product-links a:hover { background: var(--border-strong); }
-  .mt-empty { text-align: center; padding: 30px 20px; color: var(--text-secondary); font-family: var(--font-display); font-style: italic; font-size: 15px; }
+  /* Products */
+  .products { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; }
+  .product { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 26px; box-shadow: var(--shadow-card); transition: transform 0.18s ease, box-shadow 0.18s ease; }
+  .product:hover { transform: translateY(-3px); box-shadow: var(--shadow-card-hover); }
+  .product-badge { width: 38px; height: 38px; border-radius: 11px; background: linear-gradient(135deg, #F6D9E4, #EFC0D2); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: 16px; color: var(--rose-deep); margin-bottom: 16px; }
+  .product-name { font-family: var(--font-display); font-size: 19px; font-weight: 500; color: var(--text-primary); margin: 0 0 8px; }
+  .product-pitch { font-size: 13.5px; color: var(--text-secondary); line-height: 1.6; margin: 0; }
+  .product-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+  .product-links a { font-size: 12px; font-family: var(--font-sans); font-weight: 600; color: var(--rose-deep); background: #F6D9E4; padding: 7px 14px; border-radius: 20px; text-decoration: none; transition: background 0.15s ease; }
+  .product-links a:hover { background: var(--border-strong); }
+  .empty { text-align: center; padding: 50px 20px; color: var(--text-secondary); font-family: var(--font-display); font-style: italic; font-size: 16px; background: var(--bg-card-alt); border: 1px dashed var(--border-strong); border-radius: 20px; }
 
-  .mt-footer { text-align: center; margin-top: 40px; font-family: var(--font-mono); font-size: 10.5px; color: var(--text-muted); letter-spacing: 0.04em; }
+  /* CTA band */
+  .cta-band { margin-top: 88px; text-align: center; background: var(--bg-card); border: 1px solid var(--border); border-radius: 24px; padding: 48px 32px; box-shadow: var(--shadow-card); }
+  .cta-band h2 { font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: 24px; color: var(--rose-deep); margin: 0 0 10px; }
+  .cta-band p { font-size: 14px; color: var(--text-secondary); margin: 0 0 22px; }
 
-  .mt-signin { position: fixed; top: 20px; right: 20px; font-size: 11px; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.04em; color: var(--rose-deep); background: #fff; border: 1px solid var(--border-strong); padding: 7px 14px; border-radius: 20px; text-decoration: none; }
-  .mt-signin:hover { background: var(--bg-card-alt); }
+  /* Footer */
+  .footer { text-align: center; margin-top: 80px; }
+  .footer p { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-muted); letter-spacing: 0.04em; margin: 0 0 8px; }
+  .footer a { color: var(--text-muted); font-size: 11px; text-decoration: none; }
+  .footer a:hover { color: var(--rose-deep); }
+
+  /* Modal */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(46, 27, 34, 0.35); display: flex; align-items: flex-start; justify-content: center; padding: 8vh 20px; z-index: 30; opacity: 0; pointer-events: none; transition: opacity 0.15s ease; }
+  .modal-overlay.open { opacity: 1; pointer-events: auto; }
+  .modal { background: #fff; border-radius: 20px; padding: 30px; width: 420px; max-width: 100%; border: 1px solid var(--border); position: relative; box-shadow: 0 20px 60px rgba(46, 27, 34, 0.25); }
+  .modal-close { position: absolute; top: 18px; right: 18px; background: none; border: none; font-size: 18px; color: var(--text-muted); cursor: pointer; line-height: 1; padding: 4px; }
+  .modal-close:hover { color: var(--rose-deep); }
+  .modal h3 { margin: 0 0 4px; font-size: 22px; font-family: var(--font-display); font-style: italic; font-weight: 500; color: var(--rose-deep); }
+  .modal-sub { font-size: 13px; color: var(--text-secondary); margin: 0 0 6px; line-height: 1.55; }
+  .modal form label { font-size: 11px; color: var(--text-secondary); display: block; margin: 14px 0 5px; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.04em; }
+  .modal form input, .modal form textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--border-strong); border-radius: 10px; font-size: 13px; font-family: var(--font-sans); background: #fff; }
+  .modal form textarea { resize: vertical; min-height: 64px; }
+  .modal form input:focus, .modal form textarea:focus { outline: none; border-color: var(--rose); }
+  .modal .btn-primary { margin-top: 20px; width: 100%; padding: 11px; }
+  .modal .btn-primary:disabled { opacity: 0.6; cursor: default; transform: none; }
+  .form-msg { font-size: 12.5px; margin-top: 14px; display: none; }
+  .form-msg.ok { color: #2C6E42; display: block; }
+  .form-msg.err { color: var(--rose-deep); display: block; }
 </style>
 </head>
 <body>
 
-<a class="mt-signin" href="venture-log.html">Sign in</a>
+<nav class="nav">
+  <a class="nav-brand" href="/">Kaya Hirsch</a>
+  <div class="nav-actions">
+    <a class="nav-signin" href="venture-log.html">Sign in</a>
+    <button class="btn-primary" id="nav-book-btn">Book time with me</button>
+  </div>
+</nav>
 
-<div id="mt-root">
-  <div class="mt-hero">
-    <p class="mt-eyebrow">Kaya Hirsch</p>
-    <p class="mt-title">Let's meet</p>
-    <p class="mt-sub">Tell me a bit about what you'd like to talk about and a few times that work for you — I'll follow up by email to lock in a slot.</p>
+<div class="page">
+  <div class="hero">
+    <div class="avatar">KH</div>
+    <p class="eyebrow">Kaya Hirsch</p>
+    <h1>I build products, then let real users tell me what's next.</h1>
+    <p>Take a look at what I'm working on below — and if you want to talk shop, swap feedback, or just say hi, grab time on my calendar.</p>
+    <button class="btn-primary" id="hero-book-btn">Book time with me</button>
   </div>
 
-  <div class="mt-section">
-    <div class="mt-section-head">
-      <h2>Book time with me</h2>
-      <span class="mt-section-line"></span>
-    </div>
-    <div class="mt-card">
-      <form class="mt-form" id="mt-form">
-        <label>Name</label>
-        <input id="mt-name" required placeholder="Your name" />
-        <label>Email</label>
-        <input id="mt-email" type="email" required placeholder="you@email.com" />
-        <label>What do you want to talk about?</label>
-        <input id="mt-topic" placeholder="e.g. product feedback, potential collab" />
-        <label>A few times that work for you</label>
-        <input id="mt-times" placeholder="e.g. Tues or Wed afternoon, PT" />
-        <label>Anything else?</label>
-        <textarea id="mt-message" placeholder="Optional message"></textarea>
-        <button type="submit" class="mt-submit" id="mt-submit-btn">Request time</button>
-        <p class="mt-form-msg" id="mt-form-msg"></p>
-      </form>
-    </div>
-  </div>
-
-  <div class="mt-section">
-    <div class="mt-section-head">
+  <div class="section" id="products-section">
+    <div class="section-head">
       <h2>What I've built</h2>
-      <span class="mt-section-line"></span>
+      <span class="section-line"></span>
     </div>
-    <div class="mt-products" id="mt-products"></div>
-    <p class="mt-empty" id="mt-products-empty" style="display:none;">Nothing live yet — check back soon.</p>
+    <div class="products" id="products"></div>
+    <p class="empty" id="products-empty" style="display:none;">Nothing live yet — check back soon.</p>
   </div>
 
-  <p class="mt-footer">kayahirsch.com</p>
+  <div class="cta-band">
+    <h2>Want to build something together?</h2>
+    <p>I'm always up for a conversation about products, feedback, or what to build next.</p>
+    <button class="btn-primary" id="cta-book-btn">Book time with me</button>
+  </div>
+
+  <div class="footer">
+    <p>kayahirsch.com</p>
+    <a href="venture-log.html">Sign in</a>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <button class="modal-close" id="modal-close" aria-label="Close">&#10005;</button>
+    <h3>Let's meet</h3>
+    <p class="modal-sub">Tell me a bit about what you'd like to talk about and a few times that work for you — I'll follow up by email to lock in a slot.</p>
+    <form id="mt-form">
+      <label>Name</label>
+      <input id="mt-name" required placeholder="Your name" />
+      <label>Email</label>
+      <input id="mt-email" type="email" required placeholder="you@email.com" />
+      <label>What do you want to talk about?</label>
+      <input id="mt-topic" placeholder="e.g. product feedback, potential collab" />
+      <label>A few times that work for you</label>
+      <input id="mt-times" placeholder="e.g. Tues or Wed afternoon, PT" />
+      <label>Anything else?</label>
+      <textarea id="mt-message" placeholder="Optional message"></textarea>
+      <button type="submit" class="btn-primary" id="mt-submit-btn">Request time</button>
+      <p class="form-msg" id="mt-form-msg"></p>
+    </form>
+  </div>
 </div>
 
 <script>
@@ -149,30 +197,34 @@
     div.textContent = str;
     return div.innerHTML;
   }
+  function initials(name) {
+    return (name || '?').trim().charAt(0).toUpperCase();
+  }
 
   async function loadProducts() {
-    const wrap = document.getElementById('mt-products');
-    const empty = document.getElementById('mt-products-empty');
+    const wrap = document.getElementById('products');
+    const empty = document.getElementById('products-empty');
     const { data, error } = await sb.from('public_products').select('*').order('created', { ascending: false });
     if (error) { console.error(error); return; }
     if (!data || data.length === 0) { empty.style.display = 'block'; return; }
     empty.style.display = 'none';
     data.forEach(product => {
       const card = document.createElement('div');
-      card.className = 'mt-product';
+      card.className = 'product';
       card.innerHTML = `
-        <p class="mt-product-name">${escapeHtml(product.name)}</p>
-        <p class="mt-product-pitch">${escapeHtml(product.pitch || '')}</p>
+        <div class="product-badge">${escapeHtml(initials(product.name))}</div>
+        <p class="product-name">${escapeHtml(product.name)}</p>
+        <p class="product-pitch">${escapeHtml(product.pitch || '')}</p>
       `;
       if (product.links && product.links.length > 0) {
         const linksWrap = document.createElement('div');
-        linksWrap.className = 'mt-product-links';
+        linksWrap.className = 'product-links';
         product.links.forEach(link => {
           const a = document.createElement('a');
           a.href = link.url;
           a.target = '_blank';
           a.rel = 'noopener noreferrer';
-          a.textContent = link.label || link.url;
+          a.textContent = (link.label || link.url) + ' →';
           a.addEventListener('click', () => {
             if (window.posthog) posthog.capture('product_link_clicked', { product: product.name, url: link.url });
           });
@@ -184,11 +236,26 @@
     });
   }
 
+  const overlay = document.getElementById('modal-overlay');
+  function openModal() {
+    overlay.classList.add('open');
+    if (window.posthog) posthog.capture('book_time_clicked');
+  }
+  function closeModal() {
+    overlay.classList.remove('open');
+  }
+  document.getElementById('nav-book-btn').addEventListener('click', openModal);
+  document.getElementById('hero-book-btn').addEventListener('click', openModal);
+  document.getElementById('cta-book-btn').addEventListener('click', openModal);
+  document.getElementById('modal-close').addEventListener('click', closeModal);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
   document.getElementById('mt-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const msgEl = document.getElementById('mt-form-msg');
     const btn = document.getElementById('mt-submit-btn');
-    msgEl.className = 'mt-form-msg';
+    msgEl.className = 'form-msg';
     msgEl.textContent = '';
 
     const name = document.getElementById('mt-name').value.trim();
@@ -214,13 +281,13 @@
     if (error) {
       console.error(error);
       msgEl.textContent = 'Something went wrong — mind trying again?';
-      msgEl.className = 'mt-form-msg err';
+      msgEl.className = 'form-msg err';
       return;
     }
     if (window.posthog) posthog.capture('meeting_request_submitted', { topic: topic });
     document.getElementById('mt-form').reset();
     msgEl.textContent = "Thanks! I'll email you to confirm a time.";
-    msgEl.className = 'mt-form-msg ok';
+    msgEl.className = 'form-msg ok';
   });
 
   loadProducts();
