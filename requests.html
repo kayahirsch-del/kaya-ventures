@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Kaya Hirsch — Meeting Requests</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&family=Space+Mono&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+  :root {
+    --bg-page: #FBF0F2;
+    --bg-card: #FFFFFF;
+    --bg-card-alt: #FDF6F7;
+    --border: #F0CFDA;
+    --border-strong: #E4A6BC;
+    --rose: #B23A62;
+    --rose-deep: #7A2745;
+    --text-primary: #2E1B22;
+    --text-secondary: #8C6472;
+    --text-muted: #C79AAC;
+    --font-display: 'Fraunces', Georgia, serif;
+    --font-sans: 'Inter', -apple-system, sans-serif;
+    --font-mono: 'Space Mono', monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg-page);
+    background-image: radial-gradient(circle at 15% 0%, #FCE4EA 0%, transparent 45%);
+    font-family: var(--font-sans);
+    color: var(--text-primary);
+    min-height: 100vh;
+    padding: 48px 20px 80px;
+  }
+  .rq-auth-wrap { max-width: 360px; margin: 15vh auto 0; text-align: center; }
+  .rq-auth-wrap .rq-eyebrow { justify-content: center; }
+  .rq-auth-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 28px 24px; margin-top: 20px; text-align: left; }
+  .rq-auth-card label { font-size: 11px; color: var(--text-secondary); display: block; margin: 12px 0 5px; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.04em; }
+  .rq-auth-card label:first-child { margin-top: 0; }
+  .rq-auth-card input { width: 100%; padding: 10px 12px; border: 1px solid var(--border-strong); border-radius: 10px; font-size: 13px; font-family: var(--font-sans); }
+  .rq-auth-actions { display: flex; gap: 8px; margin-top: 18px; }
+  .rq-auth-actions button { flex: 1; padding: 10px; border-radius: 20px; font-size: 13px; cursor: pointer; font-family: var(--font-sans); font-weight: 500; }
+  .rq-auth-primary { border: none; background: var(--rose); color: #fff; }
+  .rq-auth-primary:hover { background: var(--rose-deep); }
+  .rq-auth-secondary { border: 1px solid var(--border-strong); background: none; color: var(--text-secondary); }
+  .rq-auth-error { color: var(--rose-deep); font-size: 12px; margin-top: 12px; display: none; }
+  .rq-signout { font-size: 11px; color: var(--text-muted); background: none; border: none; cursor: pointer; margin-left: 12px; }
+  .rq-signout:hover { color: var(--rose-deep); }
+
+  #rq-root { max-width: 740px; margin: 0 auto; }
+  .rq-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2.5rem; border-bottom: 1px solid var(--border-strong); padding-bottom: 1.5rem; }
+  .rq-eyebrow { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--rose); margin: 0 0 6px; }
+  .rq-eyebrow a { color: var(--text-muted); text-decoration: none; }
+  .rq-title { font-family: var(--font-display); font-style: italic; font-size: 34px; font-weight: 400; margin: 0; color: var(--rose-deep); }
+  .rq-sub { font-size: 12px; color: var(--text-secondary); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 6px; }
+
+  .rq-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 14px; padding: 18px 20px; }
+  .rq-row-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .rq-name { font-family: var(--font-display); font-size: 18px; font-weight: 500; color: var(--text-primary); margin: 0; }
+  .rq-email { font-size: 12px; color: var(--rose-deep); }
+  .rq-date { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-muted); white-space: nowrap; }
+  .rq-field { font-size: 13px; color: var(--text-primary); margin-top: 10px; line-height: 1.5; }
+  .rq-field-label { font-family: var(--font-mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); display: block; margin-bottom: 2px; }
+  .rq-actions { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+  .rq-actions select { padding: 6px 10px; border: 1px solid var(--border-strong); border-radius: 20px; font-size: 12px; font-family: var(--font-sans); background: #fff; color: var(--text-primary); }
+  .rq-delete { font-size: 11px; color: var(--text-muted); background: none; border: none; cursor: pointer; margin-left: auto; }
+  .rq-delete:hover { color: var(--rose-deep); }
+  .rq-empty { text-align: center; padding: 60px 20px; color: var(--text-secondary); font-family: var(--font-display); font-style: italic; font-size: 18px; }
+</style>
+</head>
+<body>
+
+<div id="rq-auth-root" class="rq-auth-wrap">
+  <p class="rq-eyebrow">Kaya Hirsch</p>
+  <p class="rq-title" style="text-align:center;">Meeting requests</p>
+  <div class="rq-auth-card">
+    <label>Email</label>
+    <input id="rq-auth-email" type="email" placeholder="you@email.com" />
+    <label>Password</label>
+    <input id="rq-auth-password" type="password" placeholder="At least 6 characters" />
+    <div class="rq-auth-actions">
+      <button class="rq-auth-secondary" id="rq-auth-signup">Sign up</button>
+      <button class="rq-auth-primary" id="rq-auth-signin">Log in</button>
+    </div>
+    <p class="rq-auth-error" id="rq-auth-error"></p>
+  </div>
+</div>
+
+<div id="rq-root" style="display:none;">
+  <div class="rq-header">
+    <div>
+      <p class="rq-eyebrow"><a href="index.html">&larr; venture log</a></p>
+      <p class="rq-title">Meeting requests</p>
+      <p class="rq-sub"><span id="rq-count">loading&hellip;</span><button class="rq-signout" id="rq-signout-btn">Sign out</button></p>
+    </div>
+  </div>
+
+  <div id="rq-list"></div>
+  <p class="rq-empty" id="rq-empty" style="display:none;">No requests yet.</p>
+</div>
+
+<script>
+(function() {
+  const SUPABASE_URL = 'https://rtztcvvkzyqjunyctxbh.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0enRjdnZrenlxanVueWN0eGJoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3Mjk3OTIsImV4cCI6MjEwMDMwNTc5Mn0.28THw1ckqCgFqGWLstg_Yi3j_emyfzZ5J5FyIs0juII';
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  let requests = [];
+  const STATUSES = ['new', 'contacted', 'scheduled', 'declined'];
+
+  function fmtDate(d) {
+    return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function showAuth() {
+    document.getElementById('rq-auth-root').style.display = 'block';
+    document.getElementById('rq-root').style.display = 'none';
+  }
+  function showApp() {
+    document.getElementById('rq-auth-root').style.display = 'none';
+    document.getElementById('rq-root').style.display = 'block';
+  }
+  function authError(msg) {
+    const el = document.getElementById('rq-auth-error');
+    el.textContent = msg;
+    el.style.display = msg ? 'block' : 'none';
+  }
+
+  document.getElementById('rq-auth-signup').addEventListener('click', async () => {
+    authError('');
+    const email = document.getElementById('rq-auth-email').value.trim();
+    const password = document.getElementById('rq-auth-password').value;
+    const { error } = await sb.auth.signUp({ email, password });
+    if (error) { authError(error.message); return; }
+    authError('Account created — check your email to confirm, then log in.');
+  });
+  document.getElementById('rq-auth-signin').addEventListener('click', async () => {
+    authError('');
+    const email = document.getElementById('rq-auth-email').value.trim();
+    const password = document.getElementById('rq-auth-password').value;
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) { authError(error.message); return; }
+  });
+  document.getElementById('rq-signout-btn').addEventListener('click', async () => {
+    await sb.auth.signOut();
+  });
+
+  sb.auth.onAuthStateChange((event, session) => {
+    if (session) { showApp(); load(); } else { showAuth(); }
+  });
+
+  async function load() {
+    const { data, error } = await sb.from('meeting_requests').select('*').order('created_at', { ascending: false });
+    if (error) { console.error(error); return; }
+    requests = data || [];
+    render();
+  }
+
+  function render() {
+    const list = document.getElementById('rq-list');
+    const empty = document.getElementById('rq-empty');
+    const count = document.getElementById('rq-count');
+    count.textContent = requests.length + (requests.length === 1 ? ' request' : ' requests');
+    list.innerHTML = '';
+    if (requests.length === 0) { empty.style.display = 'block'; return; }
+    empty.style.display = 'none';
+    requests.forEach(r => list.appendChild(buildCard(r)));
+  }
+
+  function buildCard(r) {
+    const card = document.createElement('div');
+    card.className = 'rq-card';
+    card.innerHTML = `
+      <div class="rq-row-top">
+        <div>
+          <p class="rq-name">${escapeHtml(r.name)}</p>
+          <a class="rq-email" href="mailto:${escapeHtml(r.email)}">${escapeHtml(r.email)}</a>
+        </div>
+        <span class="rq-date">${fmtDate(r.created_at)}</span>
+      </div>
+      ${r.topic ? `<div class="rq-field"><span class="rq-field-label">Topic</span>${escapeHtml(r.topic)}</div>` : ''}
+      ${r.preferred_times ? `<div class="rq-field"><span class="rq-field-label">Preferred times</span>${escapeHtml(r.preferred_times)}</div>` : ''}
+      ${r.message ? `<div class="rq-field"><span class="rq-field-label">Message</span>${escapeHtml(r.message)}</div>` : ''}
+    `;
+
+    const actions = document.createElement('div');
+    actions.className = 'rq-actions';
+    const select = document.createElement('select');
+    STATUSES.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s;
+      opt.textContent = s.charAt(0).toUpperCase() + s.slice(1);
+      if (s === r.status) opt.selected = true;
+      select.appendChild(opt);
+    });
+    select.addEventListener('change', async () => {
+      r.status = select.value;
+      await sb.from('meeting_requests').update({ status: r.status }).eq('id', r.id);
+    });
+    actions.appendChild(select);
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'rq-delete';
+    delBtn.textContent = 'Delete';
+    delBtn.addEventListener('click', async () => {
+      requests = requests.filter(x => x.id !== r.id);
+      render();
+      await sb.from('meeting_requests').delete().eq('id', r.id);
+    });
+    actions.appendChild(delBtn);
+
+    card.appendChild(actions);
+    return card;
+  }
+
+  sb.auth.getSession().then(({ data: { session } }) => {
+    if (session) { showApp(); load(); } else { showAuth(); }
+  });
+})();
+</script>
+</body>
+</html>
