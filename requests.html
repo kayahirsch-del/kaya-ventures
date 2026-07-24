@@ -67,6 +67,8 @@
   .rq-field-label { font-family: var(--font-mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); display: block; margin-bottom: 2px; }
   .rq-actions { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
   .rq-actions select { padding: 6px 10px; border: 1px solid var(--border-strong); border-radius: 20px; font-size: 12px; font-family: var(--font-sans); background: #fff; color: var(--text-primary); }
+  .rq-zoom { font-size: 12px; font-family: var(--font-sans); font-weight: 600; color: var(--rose-deep); background: #F3E6CC; padding: 7px 14px; border-radius: 20px; text-decoration: none; white-space: nowrap; }
+  .rq-zoom:hover { background: var(--border-strong); }
   .rq-delete { font-size: 11px; color: var(--text-muted); background: none; border: none; cursor: pointer; margin-left: auto; }
   .rq-delete:hover { color: var(--rose-deep); }
   .rq-empty { text-align: center; padding: 60px 20px; color: var(--text-secondary); font-family: var(--font-display); font-style: italic; font-size: 18px; }
@@ -111,6 +113,17 @@
 
   let requests = [];
   const STATUSES = ['new', 'contacted', 'scheduled', 'declined'];
+  const ZOOM_LINK = 'https://us04web.zoom.us/j/3414088649?pwd=VWJNWU9MSTd0RmN6L0pFRGlvNFRUQT09';
+
+  function buildZoomMailto(r) {
+    const subject = "Let's chat" + (r.preferred_times ? ' — ' + r.preferred_times : '');
+    const body =
+      'Hi ' + r.name + ',\n\n' +
+      "Great — let's chat" + (r.preferred_times ? ' on ' + r.preferred_times : '') + '!\n\n' +
+      'Join here: ' + ZOOM_LINK + '\n\n' +
+      'See you then!\nKaya';
+    return 'mailto:' + r.email + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+  }
 
   function fmtDate(d) {
     return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -207,6 +220,12 @@
       await sb.from('meeting_requests').update({ status: r.status }).eq('id', r.id);
     });
     actions.appendChild(select);
+
+    const zoomLink = document.createElement('a');
+    zoomLink.className = 'rq-zoom';
+    zoomLink.href = buildZoomMailto(r);
+    zoomLink.textContent = 'Send Zoom invite';
+    actions.appendChild(zoomLink);
 
     const delBtn = document.createElement('button');
     delBtn.className = 'rq-delete';
