@@ -274,9 +274,9 @@
   const WEB3FORMS_ACCESS_KEY = '96102d34-5251-4afd-9f53-555599292a8e';
   async function notifyByEmail({ name, email, topic, preferredTimes, message }) {
     try {
-      await fetch('https://api.web3forms.com/submit', {
+      const res = await fetch('https://api.web3forms.com/submit', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify({
           access_key: WEB3FORMS_ACCESS_KEY,
           subject: 'New "Let\'s chat" request from ' + name,
@@ -288,8 +288,14 @@
             'Message:\n' + (message || '—')
         })
       });
+      const body = await res.json().catch(() => null);
+      if (!res.ok || !body || body.success === false) {
+        console.error('Web3Forms notification rejected', res.status, body);
+      } else {
+        console.log('Web3Forms notification accepted', body);
+      }
     } catch (e) {
-      console.error('Email notification failed', e);
+      console.error('Email notification failed to send', e);
     }
   }
 
