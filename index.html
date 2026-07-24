@@ -271,6 +271,28 @@
     return (name || '?').trim().charAt(0).toUpperCase();
   }
 
+  const WEB3FORMS_ACCESS_KEY = '96102d34-5251-4afd-9f53-555599292a8e';
+  async function notifyByEmail({ name, email, topic, preferredTimes, message }) {
+    try {
+      await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          access_key: WEB3FORMS_ACCESS_KEY,
+          subject: 'New "Let\'s chat" request from ' + name,
+          name: name,
+          email: email,
+          message:
+            'Topic: ' + (topic || '—') + '\n' +
+            'Preferred time: ' + preferredTimes + '\n\n' +
+            'Message:\n' + (message || '—')
+        })
+      });
+    } catch (e) {
+      console.error('Email notification failed', e);
+    }
+  }
+
   async function loadProducts() {
     const wrap = document.getElementById('products');
     const empty = document.getElementById('products-empty');
@@ -440,6 +462,7 @@
       return;
     }
     if (window.posthog) posthog.capture('meeting_request_submitted', { topic: topic, slot: preferredTimes });
+    notifyByEmail({ name, email, topic, preferredTimes, message });
     document.getElementById('mt-form').reset();
     resetSlotPicker();
     msgEl.textContent = "Thanks! I'll email you to confirm a time.";
