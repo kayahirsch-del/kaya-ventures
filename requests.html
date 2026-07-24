@@ -4,22 +4,23 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Kaya Hirsch — Meeting Requests</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&family=Space+Mono&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
   :root {
-    --bg-page: #FBF0F2;
+    --bg-page: #FBF3E9;
     --bg-card: #FFFFFF;
-    --bg-card-alt: #FDF6F7;
-    --border: #F0CFDA;
-    --border-strong: #E4A6BC;
-    --rose: #B23A62;
-    --rose-deep: #7A2745;
-    --text-primary: #2E1B22;
-    --text-secondary: #8C6472;
-    --text-muted: #C79AAC;
+    --bg-card-alt: #FAF3E6;
+    --border: #EFE1C8;
+    --border-strong: #DCC090;
+    --rose: #8B4A52;
+    --rose-deep: #5C2430;
+    --text-primary: #2A1B17;
+    --text-secondary: #8A7160;
+    --text-muted: #C7B294;
     --font-display: 'Fraunces', Georgia, serif;
     --font-sans: 'Inter', -apple-system, sans-serif;
     --font-mono: 'Space Mono', monospace;
@@ -28,7 +29,7 @@
   body {
     margin: 0;
     background: var(--bg-page);
-    background-image: radial-gradient(circle at 15% 0%, #FCE4EA 0%, transparent 45%);
+    background-image: radial-gradient(circle at 15% 0%, #F6E8D0 0%, transparent 45%);
     font-family: var(--font-sans);
     color: var(--text-primary);
     min-height: 100vh;
@@ -51,7 +52,8 @@
 
   #rq-root { max-width: 740px; margin: 0 auto; }
   .rq-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2.5rem; border-bottom: 1px solid var(--border-strong); padding-bottom: 1.5rem; }
-  .rq-eyebrow { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--rose); margin: 0 0 6px; }
+  .rq-eyebrow { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--rose); margin: 0 0 6px; display: flex; align-items: center; gap: 6px; }
+  .brand-mark-sm { width: 14px; height: auto; flex-shrink: 0; }
   .rq-eyebrow a { color: var(--text-muted); text-decoration: none; }
   .rq-title { font-family: var(--font-display); font-style: italic; font-size: 34px; font-weight: 400; margin: 0; color: var(--rose-deep); }
   .rq-sub { font-size: 12px; color: var(--text-secondary); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 6px; }
@@ -73,7 +75,7 @@
 <body>
 
 <div id="rq-auth-root" class="rq-auth-wrap">
-  <p class="rq-eyebrow">Kaya Hirsch</p>
+  <p class="rq-eyebrow"><svg class="brand-mark-sm" viewBox="30 6 128 152" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="112" cy="42" r="24" fill="#E8C99B"></circle><path d="M70 148 C 74 118, 82 94, 96 74 C 99 70, 97 66, 93 68 C 80 76, 70 96, 64 118 C 62 128, 64 138, 70 148 Z" fill="#5C2430"></path><path d="M95 72 C 78 66, 58 66, 40 74 C 58 72, 76 74, 92 82 C 93 78, 94 75, 95 72 Z" fill="#5C2430"></path><path d="M96 70 C 84 52, 68 40, 48 34 C 66 44, 82 58, 93 76 Z" fill="#5C2430"></path><path d="M97 68 C 92 48, 94 30, 102 16 C 98 32, 96 50, 97 68 Z" fill="#5C2430"></path><path d="M98 68 C 108 50, 124 38, 142 34 C 126 42, 112 54, 100 70 Z" fill="#5C2430"></path><path d="M99 72 C 116 68, 134 70, 148 78 C 132 76, 116 78, 100 84 Z" fill="#5C2430"></path></svg>Kaya Hirsch</p>
   <p class="rq-title" style="text-align:center;">Meeting requests</p>
   <div class="rq-auth-card">
     <label>Email</label>
@@ -91,7 +93,7 @@
 <div id="rq-root" style="display:none;">
   <div class="rq-header">
     <div>
-      <p class="rq-eyebrow"><a href="venture-log.html">&larr; venture log</a></p>
+      <p class="rq-eyebrow"><svg class="brand-mark-sm" viewBox="30 6 128 152" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="112" cy="42" r="24" fill="#E8C99B"></circle><path d="M70 148 C 74 118, 82 94, 96 74 C 99 70, 97 66, 93 68 C 80 76, 70 96, 64 118 C 62 128, 64 138, 70 148 Z" fill="#5C2430"></path><path d="M95 72 C 78 66, 58 66, 40 74 C 58 72, 76 74, 92 82 C 93 78, 94 75, 95 72 Z" fill="#5C2430"></path><path d="M96 70 C 84 52, 68 40, 48 34 C 66 44, 82 58, 93 76 Z" fill="#5C2430"></path><path d="M97 68 C 92 48, 94 30, 102 16 C 98 32, 96 50, 97 68 Z" fill="#5C2430"></path><path d="M98 68 C 108 50, 124 38, 142 34 C 126 42, 112 54, 100 70 Z" fill="#5C2430"></path><path d="M99 72 C 116 68, 134 70, 148 78 C 132 76, 116 78, 100 84 Z" fill="#5C2430"></path></svg><a href="venture-log.html">&larr; venture log</a></p>
       <p class="rq-title">Meeting requests</p>
       <p class="rq-sub"><span id="rq-count">loading&hellip;</span><button class="rq-signout" id="rq-signout-btn">Sign out</button></p>
     </div>
