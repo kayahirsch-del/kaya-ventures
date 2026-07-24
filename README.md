@@ -19,4 +19,4 @@ A `CNAME` file pointing at `kayahirsch.com` is included. To finish wiring it up:
 2. At your domain registrar, point DNS at GitHub Pages — either an `A` record for the apex domain to GitHub's Pages IPs, or a `CNAME` record if you're using a `www` subdomain. See https://docs.github.com/pages/configuring-a-custom-domain-for-your-github-pages-site.
 
 ## Analytics (PostHog)
-`index.html` includes a PostHog snippet with a placeholder project key. Sign up at https://posthog.com, grab your Project API Key from Project Settings, and swap it into the `posthog.init(...)` call near the top of `index.html`. The same snippet can be copied into `venture-log.html` or `maintenance.html` to track those tools too.
+`index.html` is wired up to a PostHog project (US Cloud). It tracks page views/autocapture plus custom events: `book_time_clicked`, `meeting_request_submitted`, and `product_link_clicked` (with which product/URL). Check the events in your PostHog dashboard at https://us.posthog.com. The same snippet can be copied into `venture-log.html` or `maintenance.html` to track those tools too — just reuse the same `posthog.init(...)` call.
