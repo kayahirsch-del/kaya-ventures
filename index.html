@@ -102,6 +102,7 @@
   .product { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 26px; box-shadow: var(--shadow-card); transition: transform 0.18s ease, box-shadow 0.18s ease; }
   .product:hover { transform: translateY(-3px); box-shadow: var(--shadow-card-hover); }
   .product-badge { width: 38px; height: 38px; border-radius: 11px; background: linear-gradient(135deg, #F3E0BC, var(--gold)); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: 16px; color: var(--rose-deep); margin-bottom: 16px; }
+  .product-icon { width: 38px; height: 38px; border-radius: 11px; object-fit: cover; display: block; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(92, 36, 48, 0.2); }
   .product-name { font-family: var(--font-display); font-size: 19px; font-weight: 500; color: var(--text-primary); margin: 0 0 8px; }
   .product-pitch { font-size: 13.5px; color: var(--text-secondary); line-height: 1.6; margin: 0; }
   .product-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
@@ -202,7 +203,7 @@
     </svg>
     <p class="eyebrow">Kaya Hirsch</p>
     <h1>Designer and builder in New York, born and raised in LA.</h1>
-    <p class="hero-sub">Duke Grad with a degree in CS and Visual Media. Fashion background, technical training, consumer instinct. I use all three to make products people actually want to use. Currently in finance, permanently building on the side.</p>
+    <p class="hero-sub">Duke Grad with a degree in CS and Visual Media. Fashion background, technical training, consumer instinct. I use all three skills to make products people actually want to use. Currently in finance, permanently building on the side.</p>
     <p class="hero-lead">Selected work below.</p>
   </div>
 
@@ -307,8 +308,11 @@
     data.forEach(product => {
       const card = document.createElement('div');
       card.className = 'product';
+      const badge = product.icon_url
+        ? `<img class="product-icon" src="${escapeHtml(product.icon_url)}" alt="" />`
+        : `<div class="product-badge">${escapeHtml(initials(product.name))}</div>`;
       card.innerHTML = `
-        <div class="product-badge">${escapeHtml(initials(product.name))}</div>
+        ${badge}
         <p class="product-name">${escapeHtml(product.name)}</p>
         <p class="product-pitch">${escapeHtml(product.pitch || '')}</p>
       `;
