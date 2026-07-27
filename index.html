@@ -120,6 +120,8 @@
   .footer p { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-muted); letter-spacing: 0.04em; margin: 0 0 8px; }
   .footer a { color: var(--text-muted); font-size: 11px; text-decoration: none; }
   .footer a:hover { color: var(--rose-deep); }
+  .footer-links { display: flex; justify-content: center; align-items: center; gap: 8px; }
+  .footer-dot { color: var(--text-muted); font-size: 11px; }
 
   /* Modal */
   .modal-overlay { position: fixed; inset: 0; background: rgba(42, 27, 23, 0.35); display: flex; align-items: flex-start; justify-content: center; padding: 6vh 20px; z-index: 30; opacity: 0; pointer-events: none; transition: opacity 0.15s ease; }
@@ -224,7 +226,13 @@
 
   <div class="footer">
     <p>kayahirsch.com</p>
-    <a href="venture-log.html">Sign in</a>
+    <div class="footer-links">
+      <a href="https://www.linkedin.com/in/kaya-hirsch/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+      <span class="footer-dot">&middot;</span>
+      <a href="mailto:kayahirsch@gmail.com">Email</a>
+      <span class="footer-dot">&middot;</span>
+      <a href="venture-log.html">Sign in</a>
+    </div>
   </div>
 </div>
 
