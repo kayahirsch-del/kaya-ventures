@@ -23,23 +23,31 @@
 </script>
 
 <style>
+  @font-face {
+    font-family: 'Tanker';
+    src: url('fonts/Tanker-Regular.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+  }
   :root {
-    --bg-page: #FBF3E9;
+    --bg-page: #FFFFFF;
     --bg-card: #FFFFFF;
-    --bg-card-alt: #FAF3E6;
-    --border: #EFE1C8;
-    --border-strong: #DCC090;
-    --rose: #8B4A52;
-    --rose-deep: #5C2430;
-    --gold: #E8C99B;
-    --text-primary: #2A1B17;
-    --text-secondary: #8A7160;
-    --text-muted: #C7B294;
+    --bg-card-alt: #F6F6F6;
+    --border: #E7E7E7;
+    --border-strong: #CFCFCF;
+    --rose: #1A1A1A;
+    --rose-deep: #000000;
+    --gold: #D9D9D9;
+    --text-primary: #111111;
+    --text-secondary: #5A5A5A;
+    --text-muted: #9A9A9A;
     --font-display: 'Fraunces', Georgia, serif;
+    --font-tanker: 'Tanker', 'Inter', sans-serif;
     --font-sans: 'Inter', -apple-system, sans-serif;
     --font-mono: 'Space Mono', monospace;
-    --shadow-card: 0 1px 2px rgba(92, 36, 48, 0.04), 0 8px 24px rgba(92, 36, 48, 0.06);
-    --shadow-card-hover: 0 4px 10px rgba(92, 36, 48, 0.06), 0 16px 32px rgba(92, 36, 48, 0.1);
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.05);
+    --shadow-card-hover: 0 4px 10px rgba(0, 0, 0, 0.05), 0 16px 32px rgba(0, 0, 0, 0.08);
   }
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
@@ -48,9 +56,6 @@
     position: relative;
     overflow-x: hidden;
     background: var(--bg-page);
-    background-image:
-      radial-gradient(circle at 12% 0%, #F6E8D0 0%, transparent 42%),
-      radial-gradient(circle at 100% 20%, #F9F0DE 0%, transparent 38%);
     font-family: var(--font-sans);
     color: var(--text-primary);
     min-height: 100vh;
@@ -70,23 +75,23 @@
   }
 
   /* Nav */
-  .nav { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; justify-content: space-between; padding: 18px 32px; background: rgba(251, 243, 233, 0.78); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); }
-  .nav-brand { display: flex; align-items: center; gap: 8px; font-family: var(--font-display); font-style: italic; font-size: 19px; color: var(--rose-deep); text-decoration: none; }
-  .brand-mark { width: 20px; height: auto; flex-shrink: 0; }
-  .hero-mark { width: 60px; height: auto; margin: 0 auto 22px; display: block; }
+  .nav { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; justify-content: space-between; padding: 18px 32px; background: rgba(255, 255, 255, 0.86); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); }
+  .nav-brand { font-family: var(--font-tanker); font-size: 16px; letter-spacing: 0.02em; color: var(--text-primary); text-decoration: none; }
   .nav-actions { display: flex; align-items: center; gap: 18px; }
   .nav-signin { font-size: 12px; color: var(--text-muted); text-decoration: none; }
   .nav-signin:hover { color: var(--rose-deep); }
-  .btn-primary { border: none; background: var(--rose); color: #fff; border-radius: 30px; padding: 10px 20px; font-size: 13px; font-family: var(--font-sans); font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(139, 74, 82, 0.28); transition: background 0.15s ease, transform 0.15s ease; }
-  .btn-primary:hover { background: var(--rose-deep); transform: translateY(-1px); }
+  .btn-primary { border: none; background: var(--rose-deep); color: #fff; border-radius: 30px; padding: 10px 20px; font-size: 13px; font-family: var(--font-sans); font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18); transition: background 0.15s ease, transform 0.15s ease; }
+  .btn-primary:hover { background: #2A2A2A; transform: translateY(-1px); }
 
   /* Layout */
   .page { position: relative; z-index: 1; max-width: 880px; margin: 0 auto; padding: 0 24px 100px; }
 
   /* Hero */
   .hero { text-align: center; padding: 80px 20px 64px; }
-  .eyebrow { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--rose); margin: 0 0 14px; }
+  .hero-name { font-family: var(--font-tanker); font-size: clamp(26px, 4vw, 34px); letter-spacing: 0.02em; color: var(--text-primary); margin: 0 0 20px; }
   .hero h1 { font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: clamp(30px, 5vw, 46px); line-height: 1.18; margin: 0 auto; max-width: 620px; color: var(--rose-deep); }
+  .hero h1 a { color: var(--rose-deep); text-decoration-color: var(--border-strong); text-underline-offset: 3px; }
+  .hero h1 a:hover { text-decoration-color: var(--rose-deep); }
   .hero p { font-size: 15px; color: var(--text-secondary); max-width: 480px; margin: 18px auto 0; line-height: 1.65; }
   .hero p.hero-lead { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--rose); margin-top: 26px; }
 
@@ -101,13 +106,13 @@
   .products { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; }
   .product { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 26px; box-shadow: var(--shadow-card); transition: transform 0.18s ease, box-shadow 0.18s ease; }
   .product:hover { transform: translateY(-3px); box-shadow: var(--shadow-card-hover); }
-  .product-badge { width: 38px; height: 38px; border-radius: 11px; background: linear-gradient(135deg, #F3E0BC, var(--gold)); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: 16px; color: var(--rose-deep); margin-bottom: 16px; }
-  .product-icon { width: 38px; height: 38px; border-radius: 11px; object-fit: cover; display: block; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(92, 36, 48, 0.2); }
+  .product-badge { width: 38px; height: 38px; border-radius: 11px; background: linear-gradient(135deg, #EDEDED, var(--gold)); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: 16px; color: var(--rose-deep); margin-bottom: 16px; }
+  .product-icon { width: 38px; height: 38px; border-radius: 11px; object-fit: cover; display: block; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15); }
   .product-name { font-family: var(--font-display); font-size: 19px; font-weight: 500; color: var(--text-primary); margin: 0 0 8px; }
   .product-pitch { font-size: 13.5px; color: var(--text-secondary); line-height: 1.6; margin: 0; }
   .product-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
-  .product-links a { font-size: 12px; font-family: var(--font-sans); font-weight: 600; color: var(--rose-deep); background: #F3E6CC; padding: 7px 14px; border-radius: 20px; text-decoration: none; transition: background 0.15s ease; }
-  .product-links a:hover { background: var(--border-strong); }
+  .product-links a { font-size: 12px; font-family: var(--font-sans); font-weight: 600; color: var(--text-primary); background: var(--bg-card-alt); padding: 7px 14px; border-radius: 20px; text-decoration: none; transition: background 0.15s ease, color 0.15s ease; }
+  .product-links a:hover { background: var(--rose-deep); color: #fff; }
   .empty { text-align: center; padding: 50px 20px; color: var(--text-secondary); font-family: var(--font-display); font-style: italic; font-size: 16px; background: var(--bg-card-alt); border: 1px dashed var(--border-strong); border-radius: 20px; }
 
   /* CTA band */
@@ -124,9 +129,9 @@
   .footer-dot { color: var(--text-muted); font-size: 11px; }
 
   /* Modal */
-  .modal-overlay { position: fixed; inset: 0; background: rgba(42, 27, 23, 0.35); display: flex; align-items: flex-start; justify-content: center; padding: 6vh 20px; z-index: 30; opacity: 0; pointer-events: none; transition: opacity 0.15s ease; }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(10, 10, 10, 0.4); display: flex; align-items: flex-start; justify-content: center; padding: 6vh 20px; z-index: 30; opacity: 0; pointer-events: none; transition: opacity 0.15s ease; }
   .modal-overlay.open { opacity: 1; pointer-events: auto; }
-  .modal { background: #fff; border-radius: 20px; width: 420px; max-width: 100%; max-height: 88vh; border: 1px solid var(--border); position: relative; box-shadow: 0 20px 60px rgba(42, 27, 23, 0.25); }
+  .modal { background: #fff; border-radius: 20px; width: 420px; max-width: 100%; max-height: 88vh; border: 1px solid var(--border); position: relative; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2); }
   .modal-scroll { max-height: 88vh; overflow-y: auto; padding: 30px; border-radius: 20px; }
   .modal-close { position: absolute; top: 18px; right: 18px; background: #fff; border-radius: 50%; z-index: 1; border: none; font-size: 18px; color: var(--text-muted); cursor: pointer; line-height: 1; padding: 4px; }
   .modal-close:hover { color: var(--rose-deep); }
@@ -174,18 +179,7 @@
 <div class="frond-slot frond-slot-right" style="top:1170px; width:230px;"><img class="frond-img" src="palms.webp" alt="" style="--tilt:8deg; opacity:0.78; animation-duration:5.7s; animation-delay:-0.8s;"></div>
 
 <nav class="nav">
-  <a class="nav-brand" href="/">
-    <svg class="brand-mark" viewBox="30 6 128 152" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <circle cx="112" cy="42" r="24" fill="#E8C99B"></circle>
-      <path d="M70 148 C 74 118, 82 94, 96 74 C 99 70, 97 66, 93 68 C 80 76, 70 96, 64 118 C 62 128, 64 138, 70 148 Z" fill="#5C2430"></path>
-      <path d="M95 72 C 78 66, 58 66, 40 74 C 58 72, 76 74, 92 82 C 93 78, 94 75, 95 72 Z" fill="#5C2430"></path>
-      <path d="M96 70 C 84 52, 68 40, 48 34 C 66 44, 82 58, 93 76 Z" fill="#5C2430"></path>
-      <path d="M97 68 C 92 48, 94 30, 102 16 C 98 32, 96 50, 97 68 Z" fill="#5C2430"></path>
-      <path d="M98 68 C 108 50, 124 38, 142 34 C 126 42, 112 54, 100 70 Z" fill="#5C2430"></path>
-      <path d="M99 72 C 116 68, 134 70, 148 78 C 132 76, 116 78, 100 84 Z" fill="#5C2430"></path>
-    </svg>
-    Kaya Hirsch
-  </a>
+  <a class="nav-brand" href="/">Kaya Hirsch</a>
   <div class="nav-actions">
     <a class="nav-signin" href="venture-log.html">Sign in</a>
     <button class="btn-primary" id="nav-book-btn">Let's chat</button>
@@ -194,18 +188,9 @@
 
 <div class="page">
   <div class="hero">
-    <svg class="hero-mark" viewBox="30 6 128 152" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <circle cx="112" cy="42" r="24" fill="#E8C99B"></circle>
-      <path d="M70 148 C 74 118, 82 94, 96 74 C 99 70, 97 66, 93 68 C 80 76, 70 96, 64 118 C 62 128, 64 138, 70 148 Z" fill="#5C2430"></path>
-      <path d="M95 72 C 78 66, 58 66, 40 74 C 58 72, 76 74, 92 82 C 93 78, 94 75, 95 72 Z" fill="#5C2430"></path>
-      <path d="M96 70 C 84 52, 68 40, 48 34 C 66 44, 82 58, 93 76 Z" fill="#5C2430"></path>
-      <path d="M97 68 C 92 48, 94 30, 102 16 C 98 32, 96 50, 97 68 Z" fill="#5C2430"></path>
-      <path d="M98 68 C 108 50, 124 38, 142 34 C 126 42, 112 54, 100 70 Z" fill="#5C2430"></path>
-      <path d="M99 72 C 116 68, 134 70, 148 78 C 132 76, 116 78, 100 84 Z" fill="#5C2430"></path>
-    </svg>
-    <p class="eyebrow">Kaya Hirsch</p>
-    <h1>Designer and builder in New York, born and raised in LA.</h1>
-    <p class="hero-sub">Duke Grad with a degree in CS and Visual Media. Fashion background, technical training, consumer instinct. I use all three skills to make products people actually want to use. Currently in finance, permanently building on the side.</p>
+    <p class="hero-name">Kaya Hirsch</p>
+    <h1>Growth at <a href="https://altadaily.com" target="_blank" rel="noopener noreferrer">Alta</a> in New York, born and raised in LA.</h1>
+    <p class="hero-sub">Duke Grad with a degree in CS and Visual Media. Fashion background, technical training, consumer instinct. I use all three skills to make products people actually want to use. Currently in growth at Alta, permanently building on the side.</p>
     <p class="hero-lead">Selected work below.</p>
   </div>
 
